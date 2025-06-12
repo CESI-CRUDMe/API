@@ -40,8 +40,17 @@ $path = substr($path, 1);
 
 $path = explode('/', $path);
 
+
 switch ($path[0]) {
     case 'posts':
+if (isset($path[1])) {
+            switch ($path[1]) {
+                case 'migrate':
+                    Post::migrate($pdo);
+                    echo json_encode(['message' => 'Migration done']);
+                    die();
+            }
+        }
         switch($_SERVER['REQUEST_METHOD']){
             case 'GET':
                 $postsController = new PostsController($pdo);
