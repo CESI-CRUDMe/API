@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use PDO;
+use app\models\Post;
 
 class PostsController
 {
@@ -12,43 +13,59 @@ class PostsController
     {
         $this->pdo = $pdo;
     }
-    public function create()
+    public function create(): void
     {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $title = $data['title'];
-        $content = $data['content'];
-        $stmt = $this->pdo->prepare("INSERT INTO posts (title, content) VALUES (?, ?)");
-        $stmt->execute([$title, $content]);
+        $data = $_POST;
+        $post = new Post();
+
+        if(!isset($data['title']) || !isset($data['content']) || !isset($data['price']) || !isset($data['latitude']) || !isset($data['longitude']) || !isset($data['contact_name']) || !isset($data['contact_phone'])){
+            http_response_code(400);
+            echo json_encode(['message' => 'Missing required fields']);
+            die();
+        }
+
+        $post->title = $data['title'];
+        $post->content = $data['content'];
+        $post->price = $data['price'];
+        $post->latitude = $data['latitude'];
+        $post->longitude = $data['longitude'];
+        $post->contact_name = $data['contact_name'];
+        $post->contact_phone = $data['contact_phone'];
+        $post->create($this->pdo);
         echo json_encode(['message' => 'Post created successfully']);
     }
 
-    public function update()
+    public function update(): void
     {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $id = $data['id'];
-        $title = $data['title'];
-        $content = $data['content'];
-        $stmt = $this->pdo->prepare("UPDATE posts SET title = ?, content = ? WHERE id = ?");
-        $stmt->execute([$title, $content, $id]);
+        $data = $_POST;
+        $post = new Post();
+        $post->id = $data['id'];
+        $post->title = $data['title'];
+        $post->content = $data['content'];
+        $post->price = $data['price'];
+        $post->latitude = $data['latitude'];
+        $post->longitude = $data['longitude'];
+        $post->contact_name = $data['contact_name'];
+        $post->contact_phone = $data['contact_phone'];
+        $post->update($this->pdo);
         echo json_encode(['message' => 'Post updated successfully']);
     }
 
-    public function delete()
+    public function delete(): void
     {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $id = $data['id'];
-        $stmt = $this->pdo->prepare("DELETE FROM posts WHERE id = ?");
-        $stmt->execute([$id]);
+        $data = $_POST;
+        $post = new Post();
+        $post->id = $data['id'];
+        $post->delete($this->pdo);
         echo json_encode(['message' => 'Post deleted successfully']);
     }
 
-    public function show()
+    public function show(): void
     {
-        $data = json_decode(file_get_contents('php://input'), true);
-        $id = $data['id'];
-        $stmt = $this->pdo->prepare("SELECT * FROM posts WHERE id = ?");
-        $stmt->execute([$id]);
-        $post = $stmt->fetch(PDO::FETCH_ASSOC);
+        $data = $_POST;
+        $post = new Post();
+        $post->id = $data['id'];
+        $post->get($this->pdo);
         echo json_encode(['post' => $post]);
     }
 }

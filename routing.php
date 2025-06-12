@@ -1,5 +1,8 @@
 <?php
 
+use app\controllers\PostsController;
+use app\models\Post;
+
 /********** Autoloader **********/
 
 function autoload($class)
@@ -29,21 +32,20 @@ spl_autoload_register('autoload');
 
 
 /********** Routing **********/
-var_dump($_SERVER);
 
 $path = $_SERVER['REQUEST_URI'];
 $path = explode('?', $path);
 $path = $path[0];
 
 if (strpos($path, '/') === 0)
-$path = substr($path, 1);
+    $path = substr($path, 1);
 
 $path = explode('/', $path);
 
 
 switch ($path[0]) {
     case 'posts':
-if (isset($path[1])) {
+        if (isset($path[1])) {
             switch ($path[1]) {
                 case 'migrate':
                     Post::migrate($pdo);
@@ -51,7 +53,7 @@ if (isset($path[1])) {
                     die();
             }
         }
-        switch($_SERVER['REQUEST_METHOD']){
+        switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
                 $postsController = new PostsController($pdo);
                 $postsController->show();
@@ -60,6 +62,14 @@ if (isset($path[1])) {
                 $postsController = new PostsController($pdo);
                 $postsController->create();
                 break;
+            case 'PUT':
+            case 'PATCH':
+                $postsController = new PostsController($pdo);
+                $postsController->update();
+                break;
+            case 'DELETE':
+                $postsController = new PostsController($pdo);
+                $postsController->delete();
         }
         break;
     default:
