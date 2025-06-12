@@ -43,7 +43,7 @@ class Post
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function getAll(PDO $pdo)
+    public static function getAll(PDO $pdo)
     {
         $stmt = $pdo->prepare("SELECT * FROM posts");
         $stmt->execute();

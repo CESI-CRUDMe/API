@@ -56,7 +56,11 @@ switch ($path[0]) {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
                 $postsController = new PostsController($pdo);
-                $postsController->show();
+                if(isset($_GET['id'])){
+                    $postsController->show($_GET['id']);
+                }else{
+                    $postsController->index();
+                }
                 break;
             case 'POST':
                 $postsController = new PostsController($pdo);

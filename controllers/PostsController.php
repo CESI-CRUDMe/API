@@ -13,6 +13,26 @@ class PostsController
     {
         $this->pdo = $pdo;
     }
+
+    public function index(): void
+    {
+        $posts = Post::getAll($this->pdo);
+        echo json_encode(['posts' => $posts]);
+    }
+
+    public function show(int $id): void
+    {
+        $post = new Post();
+        $post->id = $id;
+        $post = $post->get($this->pdo);
+        if(!$post){
+            http_response_code(404);
+            echo json_encode(['message' => 'Post not found']);
+            die();
+        }
+        echo json_encode(['post' => $post]);
+    }
+
     public function create(): void
     {
         $data = $_POST;
@@ -58,14 +78,5 @@ class PostsController
         $post->id = $data['id'];
         $post->delete($this->pdo);
         echo json_encode(['message' => 'Post deleted successfully']);
-    }
-
-    public function show(): void
-    {
-        $data = $_POST;
-        $post = new Post();
-        $post->id = $data['id'];
-        $post->get($this->pdo);
-        echo json_encode(['post' => $post]);
     }
 }
