@@ -32,10 +32,11 @@ spl_autoload_register('autoload');
 var_dump($_SERVER);
 
 $path = $_SERVER['REQUEST_URI'];
+$path = explode('?', $path);
+$path = $path[0];
 
-$path = str_replace('/api.crudme.mindlens.fr/', '', $path);
-
-var_dump($path);
+if (strpos($path, '/') === 0)
+$path = substr($path, 1);
 
 $path = explode('/', $path);
 
