@@ -1,5 +1,5 @@
 <?php
 
-include 'config.php';
-
-include 'routing.php';
+require 'config.php';
+require 'database.php';
+require 'routing.php';
