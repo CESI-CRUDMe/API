@@ -5,7 +5,8 @@
 function autoload($class)
 {
     $prefixes = [
-        'app\controllers' => __DIR__ . '/controllers/'
+        'app\controllers' => __DIR__ . '/controllers/',
+        'app\models' => __DIR__ . '/models/'
     ];
 
     foreach ($prefixes as $prefix => $baseDir) {
