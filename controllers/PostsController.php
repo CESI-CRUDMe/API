@@ -78,7 +78,7 @@ class PostsController
 
     public function delete(): void
     {
-        $data = $_POST;
+        $data = $_REQUEST;
         $post = new Post();
         $post->id = $data['id'];
         $post->delete($this->pdo);
