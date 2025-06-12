@@ -8,15 +8,15 @@ use PDO;
 class Post
 {
     public int $id;
-    public string $title;
-    public string $content;
-    public float $price;
-    public float $latitude;
-    public float $longitude;
-    public string $contact_name;
-    public string $contact_phone;
-    public DateTime $created_at;
-    public DateTime $updated_at;
+    public ?string $title = null;
+    public ?string $content = null;
+    public ?float $price = null;
+    public ?float $latitude = null;
+    public ?float $longitude = null;
+    public ?string $contact_name = null;
+    public ?string $contact_phone = null;
+    public ?DateTime $created_at = null;
+    public ?DateTime $updated_at = null;
 
     public function create(PDO $pdo)
     {
@@ -26,8 +26,47 @@ class Post
 
     public function update(PDO $pdo)
     {
-        $stmt = $pdo->prepare("UPDATE posts SET title = ?, content = ?, price = ?, latitude = ?, longitude = ?, contact_name = ?, contact_phone = ? WHERE id = ?");
-        $stmt->execute([$this->title, $this->content, $this->price, $this->latitude, $this->longitude, $this->contact_name, $this->contact_phone, $this->id]);
+        // Construire la requête dynamiquement en fonction des propriétés définies
+        $fields = [];
+        $values = [];
+        
+        if ($this->title !== null) {
+            $fields[] = "title = ?";
+            $values[] = $this->title;
+        }
+        if ($this->content !== null) {
+            $fields[] = "content = ?";
+            $values[] = $this->content;
+        }
+        if ($this->price !== null) {
+            $fields[] = "price = ?";
+            $values[] = $this->price;
+        }
+        if ($this->latitude !== null) {
+            $fields[] = "latitude = ?";
+            $values[] = $this->latitude;
+        }
+        if ($this->longitude !== null) {
+            $fields[] = "longitude = ?";
+            $values[] = $this->longitude;
+        }
+        if ($this->contact_name !== null) {
+            $fields[] = "contact_name = ?";
+            $values[] = $this->contact_name;
+        }
+        if ($this->contact_phone !== null) {
+            $fields[] = "contact_phone = ?";
+            $values[] = $this->contact_phone;
+        }
+        
+        if (empty($fields)) {
+            return; 
+        }
+        
+        $values[] = $this->id; // Ajouter l'ID pour la clause WHERE
+        $sql = "UPDATE posts SET " . implode(", ", $fields) . " WHERE id = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($values);
     }
 
     public function delete(PDO $pdo)

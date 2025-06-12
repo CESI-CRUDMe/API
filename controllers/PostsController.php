@@ -57,16 +57,21 @@ class PostsController
 
     public function update(): void
     {
-        $data = $_POST;
+        $data = $_REQUEST;
+
+        if(!isset($data['id'])){
+            http_response_code(400);
+            echo json_encode(['message' => 'Missing required fields']);
+            die();
+        }
+
         $post = new Post();
         $post->id = $data['id'];
-        $post->title = $data['title'];
-        $post->content = $data['content'];
-        $post->price = $data['price'];
-        $post->latitude = $data['latitude'];
-        $post->longitude = $data['longitude'];
-        $post->contact_name = $data['contact_name'];
-        $post->contact_phone = $data['contact_phone'];
+        foreach($data as $key => $value){
+            if($key !== 'id'){
+                $post->$key = $value;
+            }
+        }
         $post->update($this->pdo);
         echo json_encode(['message' => 'Post updated successfully']);
     }
