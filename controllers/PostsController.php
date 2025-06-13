@@ -14,9 +14,11 @@ class PostsController
         $this->pdo = $pdo;
     }
 
-    public function index(): void
+    public function index($data): void
     {
-        $posts = Post::getAll($this->pdo);
+        $page = $data['page'] ?? 1;
+        $limit = $data['limit'] ?? 10;
+        $posts = Post::getAll($this->pdo, $page, $limit);
         echo json_encode(['posts' => $posts]);
     }
 
@@ -44,13 +46,13 @@ class PostsController
             die();
         }
 
-        $post->title = $data['title'];
-        $post->content = $data['content'];
-        $post->price = $data['price'];
-        $post->latitude = $data['latitude'];
-        $post->longitude = $data['longitude'];
-        $post->contact_name = $data['contact_name'];
-        $post->contact_phone = $data['contact_phone'];
+        $post->title = htmlspecialchars($data['title']);
+        $post->content = htmlspecialchars($data['content']);
+        $post->price = floatval($data['price']);
+        $post->latitude = floatval($data['latitude']);
+        $post->longitude = floatval($data['longitude']);
+        $post->contact_name = htmlspecialchars($data['contact_name']);
+        $post->contact_phone = htmlspecialchars($data['contact_phone']);
         $post->create($this->pdo);
         echo json_encode(['message' => 'Post created successfully']);
     }

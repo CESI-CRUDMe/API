@@ -59,7 +59,7 @@ switch ($path[0]) {
                 if(isset($_GET['id'])){
                     $postsController->show($_GET['id']);
                 }else{
-                    $postsController->index();
+                    $postsController->index($_REQUEST);
                 }
                 break;
             case 'POST':
