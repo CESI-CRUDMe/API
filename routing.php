@@ -42,7 +42,6 @@ if (strpos($path, '/') === 0)
 
 $path = explode('/', $path);
 
-
 switch ($path[0]) {
     case 'posts':
         if (isset($path[1])) {
@@ -57,23 +56,23 @@ switch ($path[0]) {
             case 'GET':
                 $postsController = new PostsController($pdo);
                 if(isset($_GET['id'])){
-                    $postsController->show($_GET['id']);
+                    $postsController->show($_REQUEST['id']);
                 }else{
                     $postsController->index();
                 }
                 break;
             case 'POST':
                 $postsController = new PostsController($pdo);
-                $postsController->create();
+                $postsController->create($_REQUEST);
                 break;
             case 'PUT':
             case 'PATCH':
                 $postsController = new PostsController($pdo);
-                $postsController->update();
+                $postsController->update($_REQUEST);
                 break;
             case 'DELETE':
                 $postsController = new PostsController($pdo);
-                $postsController->delete();
+                $postsController->delete($_REQUEST);
         }
         break;
     default:
