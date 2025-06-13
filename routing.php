@@ -1,15 +1,16 @@
 <?php
 
+use app\classes\Router;
 use app\controllers\PostsController;
-use app\models\Post;
+use app\controllers\AuthController;
 
 /********** Autoloader **********/
-
 function autoload($class)
 {
     $prefixes = [
         'app\controllers' => __DIR__ . '/controllers/',
-        'app\models' => __DIR__ . '/models/'
+        'app\models' => __DIR__ . '/models/',
+        'app\classes' => __DIR__ . '/classes/'
     ];
 
     foreach ($prefixes as $prefix => $baseDir) {
@@ -27,58 +28,24 @@ function autoload($class)
 spl_autoload_register('autoload');
 /********** Autoloader **********/
 
+/********** Routes Configuration **********/
+$router = new Router($pdo);
 
+// Définition des routes
+$router->addRoute('GET', 'posts', [PostsController::class, 'index']);
+$router->addRoute('GET', 'posts/{id}', [PostsController::class, 'show']);
+$router->addRoute('POST', 'posts', [PostsController::class, 'create']);
+$router->addRoute('PUT', 'posts/{id}', [PostsController::class, 'update']);
+$router->addRoute('DELETE', 'posts/{id}', [PostsController::class, 'delete']);
+$router->addRoute('GET', 'posts/migrate', [PostsController::class, 'migrate']);
 
+$router->addRoute('GET', 'jwt', [AuthController::class, 'jwt']);
 
-
-/********** Routing **********/
-
+// Récupération du chemin de la requête
 $path = $_SERVER['REQUEST_URI'];
-$path = explode('?', $path);
-$path = $path[0];
+$path = explode('?', $path)[0];
+$path = trim($path, '/');
 
-if (strpos($path, '/') === 0)
-    $path = substr($path, 1);
-
-$path = explode('/', $path);
-
-
-switch ($path[0]) {
-    case 'posts':
-        if (isset($path[1])) {
-            switch ($path[1]) {
-                case 'migrate':
-                    Post::migrate($pdo);
-                    echo json_encode(['message' => 'Migration done']);
-                    die();
-            }
-        }
-        switch ($_SERVER['REQUEST_METHOD']) {
-            case 'GET':
-                $postsController = new PostsController($pdo);
-                if(isset($_GET['id'])){
-                    $postsController->show($_GET['id']);
-                }else{
-                    $postsController->index($_REQUEST);
-                }
-                break;
-            case 'POST':
-                $postsController = new PostsController($pdo);
-                $postsController->create();
-                break;
-            case 'PUT':
-            case 'PATCH':
-                $postsController = new PostsController($pdo);
-                $postsController->update();
-                break;
-            case 'DELETE':
-                $postsController = new PostsController($pdo);
-                $postsController->delete();
-        }
-        break;
-    default:
-        http_response_code(404);
-        echo json_encode(['error' => 'Route not found']);
-        break;
-}
-/********** Routing **********/
+// Dispatch de la requête
+$router->dispatch($_SERVER['REQUEST_METHOD'], $path);
+/********** Routes Configuration **********/
