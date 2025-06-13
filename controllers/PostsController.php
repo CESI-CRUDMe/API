@@ -17,7 +17,7 @@ class PostsController
     public function index(): void
     {
         $posts = Post::getAll($this->pdo);
-        echo json_encode(['posts' => $posts]);
+        echo htmlspecialchars(json_encode(['posts' => $posts]), ENT_QUOTES, 'UTF-8');
     }
 
     public function show(int $id): void
@@ -30,12 +30,11 @@ class PostsController
             echo json_encode(['message' => 'Post not found']);
             die();
         }
-        echo json_encode(['post' => $post]);
+        echo htmlspecialchars(json_encode(['post' => $post]), ENT_QUOTES, 'UTF-8');
     }
 
-    public function create(): void
+    public function create($data): void
     {
-        $data = $_POST;
         $post = new Post();
 
         if(!isset($data['title']) || !isset($data['content']) || !isset($data['price']) || !isset($data['latitude']) || !isset($data['longitude']) || !isset($data['contact_name']) || !isset($data['contact_phone'])){
@@ -52,13 +51,11 @@ class PostsController
         $post->contact_name = $data['contact_name'];
         $post->contact_phone = $data['contact_phone'];
         $post->create($this->pdo);
-        echo json_encode(['message' => 'Post created successfully']);
+        echo htmlspecialchars(json_encode(['message' => 'Post created successfully']), ENT_QUOTES, 'UTF-8');
     }
 
-    public function update(): void
+    public function update($data): void
     {
-        $data = $_REQUEST;
-
         if(!isset($data['id'])){
             http_response_code(400);
             echo json_encode(['message' => 'Missing required fields']);
@@ -73,15 +70,14 @@ class PostsController
             }
         }
         $post->update($this->pdo);
-        echo json_encode(['message' => 'Post updated successfully']);
+        echo htmlspecialchars(json_encode(['message' => 'Post updated successfully']), ENT_QUOTES, 'UTF-8');
     }
 
-    public function delete(): void
+    public function delete($data): void
     {
-        $data = $_REQUEST;
         $post = new Post();
         $post->id = $data['id'];
         $post->delete($this->pdo);
-        echo json_encode(['message' => 'Post deleted successfully']);
+        echo htmlspecialchars(json_encode(['message' => 'Post deleted successfully']), ENT_QUOTES, 'UTF-8');
     }
 }
