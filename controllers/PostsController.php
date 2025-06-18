@@ -39,10 +39,10 @@ class PostsController
             echo json_encode(['message' => 'Post not found']);
             die();
         }
-        echo json_encode(['post' => $post]);
+        echo htmlspecialchars(json_encode(['post' => $post]), ENT_QUOTES, 'UTF-8');
     }
 
-    public function create(): void
+    public function create($data): void
     {
         $data = json_decode(file_get_contents('php://input'), true) ?? $_POST;
         $post = new Post();
@@ -61,9 +61,8 @@ class PostsController
         $post->contact_name = htmlspecialchars($data['contact_name']);
         $post->contact_phone = htmlspecialchars($data['contact_phone']);
         $post->create($this->pdo);
-        echo json_encode(['message' => 'Post created successfully']);
+        echo htmlspecialchars(json_encode(['message' => 'Post created successfully']), ENT_QUOTES, 'UTF-8');
     }
-
     public function update($params): void
     {
         $id = $params['id'] ?? null;
@@ -84,7 +83,7 @@ class PostsController
         }
         
         $post->update($this->pdo);
-        echo json_encode(['message' => 'Post updated successfully']);
+        echo htmlspecialchars(json_encode(['message' => 'Post updated successfully']), ENT_QUOTES, 'UTF-8');
     }
 
     public function delete($params): void
@@ -95,11 +94,10 @@ class PostsController
             echo json_encode(['message' => 'ID is required']);
             die();
         }
-
         $post = new Post();
         $post->id = $id;
         $post->delete($this->pdo);
-        echo json_encode(['message' => 'Post deleted successfully']);
+        echo htmlspecialchars(json_encode(['message' => 'Post deleted successfully']), ENT_QUOTES, 'UTF-8');
     }
 
     public function migrate(): void
