@@ -3,6 +3,7 @@
 use app\classes\Router;
 use app\controllers\PostsController;
 use app\controllers\AuthController;
+use app\controllers\TestController;
 
 /********** Autoloader **********/
 function autoload($class)
@@ -39,7 +40,9 @@ $router->addRoute('PUT', 'posts/{id}', [PostsController::class, 'update']);
 $router->addRoute('DELETE', 'posts/{id}', [PostsController::class, 'delete']);
 $router->addRoute('GET', 'posts/migrate', [PostsController::class, 'migrate']);
 
-$router->addRoute('GET', 'jwt', [AuthController::class, 'jwt']);
+$router->addRoute('POST', 'jwt', [AuthController::class, 'jwt']);
+
+$router->addRoute('GET', 'test', [TestController::class, 'index']);
 
 // Récupération du chemin de la requête
 $path = $_SERVER['REQUEST_URI'];

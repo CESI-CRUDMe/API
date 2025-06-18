@@ -49,14 +49,27 @@ class Router {
             return false;
         }
 
-        
         $jwt = str_replace('Bearer ', '', $headers['Authorization']);
+        
+        // Vérification basique du format du token (trois segments séparés par des points)
+        if (empty($jwt) || substr_count($jwt, '.') !== 2) {
+            return false;
+        }
+
         try {
             $decoded = JWT::decode($jwt, new Key(JWT_KEY, 'HS256'));
-            var_dump(value: time() - $decoded->exp);
+            
+            // Vérification de l'expiration
+            if (isset($decoded->exp) && time() > $decoded->exp) {
+                return false;
+            }
 
             return $decoded;
         } catch (ExpiredException $e) {
+            return false;
+        } catch (\UnexpectedValueException $e) {
+            return false;
+        } catch (\Exception $e) {
             return false;
         }
     }
