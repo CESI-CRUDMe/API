@@ -82,9 +82,10 @@ class Post
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getAll(PDO $pdo)
+    public static function getAll(PDO $pdo, int $page, int $limit)
     {
-        $stmt = $pdo->prepare("SELECT * FROM posts");
+        $offset = ($page - 1) * $limit;
+        $stmt = $pdo->prepare("SELECT * FROM posts LIMIT $limit OFFSET $offset");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
