@@ -1,6 +1,7 @@
 <?php
 
 use App\controllers\PostsController;
+use App\controllers\PostsViewController;
 use App\controllers\AuthController;
 use App\controllers\TestController;
 use App\controllers\HomeController;
@@ -11,9 +12,10 @@ $router = new Router($pdo);
 
 /************ Routes Frontend ************/
 $router->addRoute('GET', '/', [HomeController::class, 'index'], true);
-$router->addRoute('GET', '/create', [HomeController::class, 'create'], true);
-$router->addRoute('POST', '/ajax', [HomeController::class, 'ajax'], false);
-$router->addRoute('GET', '/{id}', [HomeController::class, 'show'], true);
+$router->addRoute('GET', '/posts/create', [PostsViewController::class, 'create'], true);
+$router->addRoute('POST', '/ajax', [PostsViewController::class, 'ajax'], false);
+$router->addRoute('GET', '/posts', [PostsViewController::class, 'index'], true);
+$router->addRoute('GET', '/posts/{id}', [PostsViewController::class, 'show'], true);
 
 /************ Routes Frontend ************/
 
