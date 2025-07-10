@@ -1,9 +1,9 @@
 <?php
 
-namespace app\controllers;
+namespace App\controllers;
 
 use PDO;
-use app\models\Post;
+use App\models\Post;
 
 class PostsController
 {

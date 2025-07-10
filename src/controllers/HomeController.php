@@ -1,11 +1,11 @@
 <?php
 
-namespace app\controllers;
+namespace App\controllers;
 
 use PDO;
-use app\classes\Router;
-use app\controllers\PostsController;
-use app\models\Post;
+use App\classes\Router;
+use App\controllers\PostsController;
+use App\models\Post;
 
 class HomeController
 {

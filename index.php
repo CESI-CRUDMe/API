@@ -14,30 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require 'vendor/autoload.php';
-
 /********** Autoloader **********/
-function autoload($class)
-{
-    $prefixes = [
-        'app\controllers' => __DIR__ . '/controllers/',
-        'app\models' => __DIR__ . '/models/',
-        'app\classes' => __DIR__ . '/classes/'
-    ];
-
-    foreach ($prefixes as $prefix => $baseDir) {
-        if (strpos($class, $prefix) === 0) {
-            $relativeClass = substr($class, strlen($prefix));
-            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-
-            if (file_exists($file)) {
-                require $file;
-            }
-        }
-    }
-}
-
-spl_autoload_register('autoload');
+require 'vendor/autoload.php';
 /********** Autoloader **********/
 
 

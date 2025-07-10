@@ -1,6 +1,6 @@
 <?php
 
-namespace app\classes;
+namespace App\classes;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -40,13 +40,10 @@ class Router {
             if (trim($route['method']) !== $requestMethod) {
                 continue;
             }
-            var_dump($route); echo'<br>';
             $pattern = preg_replace('/\{([^}]+)\}/', '(?P<$1>[^/]+)', $route['path']);
             $pattern = "@^" . $pattern . "$@D";
             unset($parameters);
             if (preg_match($pattern, $requestPath, $parameters)) {
-                var_dump($parameters    );
-                die;
                 return [
                     'route' => $route,
                     'parameters' => array_filter($parameters, 'is_string', ARRAY_FILTER_USE_KEY)
@@ -89,8 +86,6 @@ class Router {
 
     public function dispatch(string $requestMethod, string $requestPath) {
         $match = $this->matchRoute($requestMethod, $requestPath);
-        var_dump($match);
-        die;
         if ($match === null) {
             http_response_code(404);
             echo json_encode(['error' => 'Route not found']);

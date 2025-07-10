@@ -1,9 +1,10 @@
 <?php
 
-use app\controllers\PostsController;
-use app\controllers\AuthController;
-use app\controllers\TestController;
-use app\controllers\HomeController;
+use App\controllers\PostsController;
+use App\controllers\AuthController;
+use App\controllers\TestController;
+use App\controllers\HomeController;
+use App\classes\Router;
 
 /********** Routes Configuration **********/
 $router = new Router($pdo);
