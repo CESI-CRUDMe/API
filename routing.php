@@ -1,84 +1,45 @@
 <?php
 
 use app\controllers\PostsController;
-use app\models\Post;
+use app\controllers\AuthController;
+use app\controllers\TestController;
+use app\controllers\HomeController;
 
-/********** Autoloader **********/
+/********** Routes Configuration **********/
+$router = new Router($pdo);
 
-function autoload($class)
-{
-    $prefixes = [
-        'app\controllers' => __DIR__ . '/controllers/',
-        'app\models' => __DIR__ . '/models/'
-    ];
+/************ Routes Frontend ************/
+$router->addRoute('GET', '/', [HomeController::class, 'index'], true);
+$router->addRoute('GET', '/{id}', [HomeController::class, 'show'], true);
+$router->addRoute('GET', '/create', [HomeController::class, 'create'], true);
+$router->addRoute('POST', '/ajax', [HomeController::class, 'ajax'], false);
 
-    foreach ($prefixes as $prefix => $baseDir) {
-        if (strpos($class, $prefix) === 0) {
-            $relativeClass = substr($class, strlen($prefix));
-            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-
-            if (file_exists($file)) {
-                require $file;
-            }
-        }
-    }
-}
-
-spl_autoload_register('autoload');
-/********** Autoloader **********/
+/************ Routes Frontend ************/
 
 
+/************ Routes API ************/
+// Posts
+$router->addRoute('GET', '/api/posts', [PostsController::class, 'index'], true);
+$router->addRoute('GET', '/api/posts/{id}', [PostsController::class, 'show'], true);
+$router->addRoute('POST', '/api/posts', [PostsController::class, 'create'], false);
+$router->addRoute('PUT', '/api/posts/{id}', [PostsController::class, 'update'], false);
+$router->addRoute('DELETE', '/api/posts/{id}', [PostsController::class, 'delete'], false);
+$router->addRoute('GET', '/api/posts/migrate', [PostsController::class, 'migrate'], false);
+
+// Auth
+$router->addRoute('POST', '/api/jwt', [AuthController::class, 'jwt'], true);
+
+// Test
+$router->addRoute('GET', '/api/test', [TestController::class, 'index'], true);
+/************ Routes API ************/
 
 
-
-/********** Routing **********/
-
+// Récupération du chemin de la requête
 $path = $_SERVER['REQUEST_URI'];
-$path = explode('?', $path);
-$path = $path[0];
+$path = explode('?', $path)[0];
+// On ne retire que le slash final si présent
+$path = rtrim($path, '/');
 
-if (strpos($path, '/') === 0)
-    $path = substr($path, 1);
-
-$path = explode('/', $path);
-
-
-switch ($path[0]) {
-    case 'posts':
-        if (isset($path[1])) {
-            switch ($path[1]) {
-                case 'migrate':
-                    Post::migrate($pdo);
-                    echo json_encode(['message' => 'Migration done']);
-                    die();
-            }
-        }
-        switch ($_SERVER['REQUEST_METHOD']) {
-            case 'GET':
-                $postsController = new PostsController($pdo);
-                if(isset($_GET['id'])){
-                    $postsController->show($_GET['id']);
-                }else{
-                    $postsController->index($_REQUEST);
-                }
-                break;
-            case 'POST':
-                $postsController = new PostsController($pdo);
-                $postsController->create();
-                break;
-            case 'PUT':
-            case 'PATCH':
-                $postsController = new PostsController($pdo);
-                $postsController->update();
-                break;
-            case 'DELETE':
-                $postsController = new PostsController($pdo);
-                $postsController->delete();
-        }
-        break;
-    default:
-        http_response_code(404);
-        echo json_encode(['error' => 'Route not found']);
-        break;
-}
-/********** Routing **********/
+// Dispatch de la requête
+$router->dispatch($_SERVER['REQUEST_METHOD'], $path);
+/********** Routes Configuration **********/

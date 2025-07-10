@@ -82,10 +82,14 @@ class Post
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getAll(PDO $pdo, int $page, int $limit)
+    public static function getAll(PDO $pdo, ?int $page = null, ?int $limit = null)
     {
-        $offset = ($page - 1) * $limit;
-        $stmt = $pdo->prepare("SELECT * FROM posts LIMIT $limit OFFSET $offset");
+        $sql = "SELECT * FROM posts";
+        if ($page && $limit) {
+            $offset = ($page - 1) * $limit;
+            $sql .= " LIMIT $limit OFFSET $offset";
+        }
+        $stmt = $pdo->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -94,5 +98,12 @@ class Post
     {
         $stmt = $pdo->prepare("CREATE TABLE IF NOT EXISTS posts (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255), content TEXT, price DECIMAL(10, 2), latitude DECIMAL, longitude DECIMAL, contact_name VARCHAR(255), contact_phone VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)");
         $stmt->execute();
+    }
+
+    public static function getById(PDO $pdo, mixed $id)
+    {
+        $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
