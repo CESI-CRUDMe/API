@@ -2,18 +2,11 @@
 
 namespace App\controllers;
 
-use PDO;
 use App\models\Post;
+use App\controllers\Controller;
 
-class PostsController
+class PostsController extends Controller
 {
-    private $pdo;
-
-    public function __construct(PDO $pdo)
-    {
-        $this->pdo = $pdo;
-    }
-
     public function index($data): void
     {
         $page = $data['page'] ?? 1;
