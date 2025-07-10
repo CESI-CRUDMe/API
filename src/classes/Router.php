@@ -114,13 +114,11 @@ class Router {
 
     public static function render(string $view, array $data = []): void {
         extract($data);
-    var_dump('ROOT:', ROOT);
-    var_dump('view:', $view);
-    var_dump('full path:', ROOT . '/views/' . $view . '.php');
-    if (file_exists(ROOT . '/views/' . $view . '.php')) {
-        require ROOT . '/views/' . $view . '.php';
-    } else {
-        require ROOT . '/views/errors/404.php';
-    }
+        if (file_exists(ROOT . '/src/views/' . $view . '.php')) {
+            require ROOT . '/src/views/' . $view . '.php';
+        } else {
+            http_response_code(404);
+            require ROOT . '/src/views/errors/404.php';
+        }
     }
 } 
