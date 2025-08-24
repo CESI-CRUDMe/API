@@ -115,7 +115,9 @@ class Router {
     public static function render(string $view, array $data = []): void {
         extract($data);
         if (file_exists(ROOT . '/src/views/' . $view . '.php')) {
+            require ROOT . '/src/views/templates/header.tpl.php';
             require ROOT . '/src/views/' . $view . '.php';
+            require ROOT . '/src/views/templates/footer.tpl.php';
         } else {
             http_response_code(404);
             require ROOT . '/src/views/errors/404.php';
