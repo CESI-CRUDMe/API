@@ -13,19 +13,19 @@ class PostsViewController extends Controller
     public function index()
     {
         $posts = Post::getAll($this->pdo);
-        Router::render('home/index', ['posts' => $posts]);
+        Router::render('posts/index', ['posts' => $posts]);
     }
 
-    public function show($id)
+    public function show($params)
     {
+        $id = $params['id'];
         $post = Post::getById($this->pdo, $id);
-        Router::render('home/show', ['post' => $post]);
+        Router::render('posts/show', ['post' => $post]);
     }
 
     public function create()
     {
-        //die('create');
-        Router::render('home/create');
+        Router::render('posts/create');
     }
 
     public function ajax()
