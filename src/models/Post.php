@@ -102,8 +102,8 @@ class Post
 
     public static function getById(PDO $pdo, mixed $id)
     {
-        $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = ?");
-        $stmt->execute([$id]);
+        $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = :id");
+        $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
