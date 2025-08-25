@@ -12,3 +12,4 @@
 </head>
 
 <body>
+<?php require __DIR__ . '/nav.tpl.php'; ?>
