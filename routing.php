@@ -18,7 +18,7 @@ $router->addRoute('GET', '/posts', [PostsViewController::class, 'index'], true);
 $router->addRoute('GET', '/posts/{id}', [PostsViewController::class, 'show'], true);
 $router->addRoute('GET', '/posts/{id}/pdf', [PostsViewController::class, 'pdf'], true); // export pdf single
 $router->addRoute('GET', '/posts/pdf/all', [PostsViewController::class, 'pdfAll'], true); // export pdf all
-
+$router->addRoute('GET', '/posts/{id}/edit', [PostsViewController::class, 'edit'], true); // nouvelle route édition
 /************ Routes Frontend ************/
 
 
