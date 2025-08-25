@@ -16,8 +16,27 @@ class PostsViewController extends Controller
     {
         $q = $_GET['q'] ?? null;
         $sort = $_GET['sort'] ?? 'new';
-        $posts = Post::getFiltered($this->pdo, $q, $sort);
-        Router::render('posts/index', ['posts' => $posts, 'q' => $q, 'sort' => $sort]);
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $limit = 9; // 9 éléments par page
+        $result = Post::getFilteredPaginated($this->pdo, $q, $sort, $limit, $page);
+        $posts = $result['data'];
+        $total = $result['total'];
+        $totalPages = max(1, (int)ceil($total / $limit));
+        if($page > $totalPages) { // si dépasse, redirige vers dernière page valide
+            header('Location: /posts?' . http_build_query(array_filter(['q'=>$q,'sort'=>$sort,'page'=>$totalPages])));
+            exit;
+        }
+        $meta = [
+            'page' => $page,
+            'limit' => $limit,
+            'total' => $total,
+            'pages' => $totalPages,
+            'has_prev' => $page > 1,
+            'has_next' => $page < $totalPages,
+            'prev_page' => ($page > 1 ? $page - 1 : 1),
+            'next_page' => ($page < $totalPages ? $page + 1 : $totalPages),
+        ];
+        Router::render('posts/index', ['posts' => $posts, 'q' => $q, 'sort' => $sort, 'pagination' => $meta]);
     }
 
     public function show(int $id)
@@ -28,7 +47,22 @@ class PostsViewController extends Controller
 
     public function create()
     {
+        if(session_status()===PHP_SESSION_NONE){ session_start(); }
+        if(!isset($_SESSION['auth'])){ header('Location: /login'); exit; }
         Router::render('posts/create');
+    }
+
+    public function edit(int $id)
+    {
+        if(session_status()===PHP_SESSION_NONE){ session_start(); }
+        if(!isset($_SESSION['auth'])){ header('Location: /login'); exit; }
+        $post = Post::getById($this->pdo, $id);
+        if(!$post){
+            http_response_code(404);
+            Router::render('posts/show', ['post' => null]);
+            return;
+        }
+        Router::render('posts/edit', ['post' => $post]);
     }
 
     public function pdf(int $id)

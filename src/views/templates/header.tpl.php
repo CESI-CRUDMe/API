@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUDMe - Accueil</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <!-- /Favicon -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
         integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
@@ -34,6 +37,29 @@
             window.addEventListener('resize', ()=>{ if(window.innerWidth >= 768){ open = false; sync(); } });
             sync();
         });
+    </script>
+    <?php if(session_status()===PHP_SESSION_NONE){ session_start(); } $isAuth = isset($_SESSION['auth']); ?>
+    <script>
+    window.IS_AUTH = <?php echo $isAuth ? 'true':'false'; ?>;
+    // Gestion simple du JWT côté frontend pour endpoints protégés API
+    window.__jwtToken = null; window.__jwtExp = 0;
+    async function getJwt(){
+        if(!window.IS_AUTH){ return null; }
+        if(window.__jwtToken && Date.now() < window.__jwtExp){ return window.__jwtToken; }
+        try {
+            const res = await fetch('/api/jwt',{ method:'POST' });
+            if(!res.ok){ return null; }
+            const data = await res.json();
+            window.__jwtToken = data.token; window.__jwtExp = Date.now() + (data.expires_in*1000) - 5000; // marge 5s
+            return window.__jwtToken;
+        } catch(e){ return null; }
+    }
+    async function authFetch(url, options={}){
+        const jwt = await getJwt();
+        options.headers = options.headers || {};
+        if(jwt){ options.headers['Authorization'] = 'Bearer ' + jwt; }
+        return fetch(url, options);
+    }
     </script>
 </head>
 

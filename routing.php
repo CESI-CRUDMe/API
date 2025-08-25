@@ -12,13 +12,14 @@ $router = new Router($pdo);
 
 /************ Routes Frontend ************/
 $router->addRoute('GET', '/', [HomeController::class, 'index'], true);
+$router->addRoute('GET', '/login', [HomeController::class, 'login'], true); // page login
 $router->addRoute('GET', '/test', [TestController::class, 'index'], true);
 $router->addRoute('GET', '/posts/create', [PostsViewController::class, 'create'], true);
 $router->addRoute('GET', '/posts', [PostsViewController::class, 'index'], true);
 $router->addRoute('GET', '/posts/{id}', [PostsViewController::class, 'show'], true);
 $router->addRoute('GET', '/posts/{id}/pdf', [PostsViewController::class, 'pdf'], true); // export pdf single
 $router->addRoute('GET', '/posts/pdf/all', [PostsViewController::class, 'pdfAll'], true); // export pdf all
-
+$router->addRoute('GET', '/posts/{id}/edit', [PostsViewController::class, 'edit'], true); // nouvelle route édition
 /************ Routes Frontend ************/
 
 
@@ -28,14 +29,19 @@ $router->addRoute('GET', '/api/posts', [PostsController::class, 'index'], true);
 $router->addRoute('GET', '/api/posts/{id}', [PostsController::class, 'show'], true);
 $router->addRoute('POST', '/api/posts', [PostsController::class, 'create'], false);
 $router->addRoute('PUT', '/api/posts/{id}', [PostsController::class, 'update'], false);
+$router->addRoute('POST', '/api/posts/{id}', [PostsController::class, 'update'], false); // update via multipart
 $router->addRoute('DELETE', '/api/posts/{id}', [PostsController::class, 'delete'], false);
 $router->addRoute('GET', '/api/posts/migrate', [PostsController::class, 'migrate'], false);
 
 // Auth
 $router->addRoute('POST', '/api/jwt', [AuthController::class, 'jwt'], true);
+$router->addRoute('POST', '/api/login', [AuthController::class, 'login'], true);
+$router->addRoute('GET', '/api/auth/status', [AuthController::class, 'status'], true);
+$router->addRoute('POST', '/api/logout', [AuthController::class, 'logout'], true);
 
 // Test
 $router->addRoute('GET', '/api/test', [TestController::class, 'index'], true);
+$router->addRoute('GET', '/api/test/hash', [TestController::class, 'hashPassword'], true);
 /************ Routes API ************/
 
 

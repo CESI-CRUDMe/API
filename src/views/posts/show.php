@@ -1,3 +1,4 @@
+<?php if(session_status()===PHP_SESSION_NONE){ session_start(); } $logged = isset($_SESSION['auth']); ?>
 <?php if (!$post): ?>
     <div class="container mx-auto px-4 py-16 text-center">
         <h2 class="text-3xl font-bold mb-4 text-red-600">Post introuvable</h2>
@@ -62,6 +63,14 @@
 
     <div class="container mx-auto px-4 pb-16 max-w-4xl">
         <div class="glass-effect rounded-2xl p-8 md:p-10 space-y-8 animate-fade-in">
+            <?php if(!empty($post['image_base64'])): ?>
+            <section>
+                <h3 class="text-2xl font-bold mb-4 gradient-text">Image</h3>
+                <div class="rounded-xl overflow-hidden shadow-md bg-white/40 backdrop-blur p-2 flex justify-center">
+                    <img src="<?php echo htmlspecialchars($post['image_base64']); ?>" alt="Image du post #<?php echo (int)$post['id']; ?>" class="max-h-96 w-auto object-contain rounded-lg" loading="lazy">
+                </div>
+            </section>
+            <?php endif; ?>
             <section>
                 <h3 class="text-2xl font-bold mb-4 gradient-text">Titre</h3>
                 <div class="bubble">
@@ -108,8 +117,12 @@
                 <a href="/posts" class="bg-gradient-to-r from-purple-300 to-blue-300 hover:from-purple-400 hover:to-blue-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300">← Retour</a>
                 <div class="flex gap-3">
                     <a href="/posts/<?php echo htmlspecialchars($post['id']); ?>/pdf" class="bg-gradient-to-r from-emerald-300 to-teal-300 hover:from-emerald-400 hover:to-teal-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300" title="Exporter en PDF">Exporter PDF</a>
-                    <button disabled class="opacity-50 cursor-not-allowed bg-gradient-to-r from-yellow-300 to-amber-300 text-gray-700 font-bold py-2 px-6 rounded-full">Edit (à venir)</button>
-                    <button disabled class="opacity-50 cursor-not-allowed bg-gradient-to-r from-red-300 to-pink-300 text-gray-700 font-bold py-2 px-6 rounded-full">Supprimer (à venir)</button>
+                    <?php if($logged): ?>
+                    <a href="/posts/<?php echo htmlspecialchars($post['id']); ?>/edit" class="bg-gradient-to-r from-yellow-300 to-amber-300 hover:from-yellow-400 hover:to-amber-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300" title="Modifier">Editer</a>
+                    <button id="deleteBtn" class="bg-gradient-to-r from-red-300 to-pink-300 hover:from-red-400 hover:to-pink-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300" title="Supprimer">Supprimer</button>
+                    <?php else: ?>
+                    <a href="/login" class="bg-gradient-to-r from-yellow-300 to-amber-300 hover:from-yellow-400 hover:to-amber-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300" title="Connexion requise">Connexion requise</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -167,6 +180,21 @@
     }
 
     // Navigation toggle supprimé (centralisé dans header.tpl.php)
+
+    <?php if($logged): ?>
+    const delBtn = document.getElementById('deleteBtn');
+    if(delBtn){
+        delBtn.addEventListener('click', async ()=>{
+            if(!confirm('Confirmer la suppression du post #<?php echo (int)$post['id']; ?> ?')) return;
+            try {
+                const res = await authFetch('/api/posts/<?php echo (int)$post['id']; ?>',{ method:'DELETE' });
+                const data = await res.json().catch(()=>({}));
+                if(!res.ok){ alert(data.message || 'Erreur suppression'); return; }
+                window.location.href = '/posts';
+            } catch(e){ alert(e.message || 'Erreur réseau'); }
+        });
+    }
+    <?php endif; ?>
 })();
 </script>
 </html>

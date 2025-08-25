@@ -1,6 +1,9 @@
 RewriteEngine On
 RewriteBase /
 
+# Favicon rewrite (si un navigateur demande /favicon.ico on sert le SVG)
+RewriteRule ^favicon\.ico$ /favicon.svg [L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 

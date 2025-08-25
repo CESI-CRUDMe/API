@@ -47,6 +47,23 @@ class TestController extends Controller
         echo $dompdf->output();
     }
 
+    public function hashPassword(): void
+    {
+        header('Content-Type: application/json');
+        $password = $_GET['password'] ?? $_GET['p'] ?? null;
+        if(!$password){
+            http_response_code(400);
+            echo json_encode(['error' => 'Paramètre password manquant ?password=MON_MDP']);
+            return;
+        }
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        echo json_encode([
+            'password' => $password,
+            'hash' => $hash,
+            'algo' => password_get_info($hash)['algoName'] ?? null
+        ]);
+    }
+
     private function sendTestMail(): array
     {
         if(!defined('SMTP_HOST')) {

@@ -189,6 +189,52 @@
                 </a>
             <?php endforeach; ?>
         </div>
+        <?php if(isset($pagination) && $pagination['pages']>1): ?>
+            <?php
+                $baseParams = array_filter(['q'=>$q,'sort'=>$sort], fn($v)=>$v!==null && $v!=='');
+                $makeUrl = function($p) use ($baseParams){ return '/posts?' . http_build_query(array_merge($baseParams, ['page'=>$p])); };
+                $current = $pagination['page'];
+                $totalPages = $pagination['pages'];
+                $window = 2; // pages around current
+                $pages = [];
+                for($i=1;$i<=$totalPages;$i++){
+                    if($i==1 || $i==$totalPages || ($i>=$current-$window && $i<=$current+$window)){
+                        $pages[] = $i;
+                    }
+                }
+                // Insert ellipsis markers
+                $display = [];
+                $prev = 0;
+                foreach($pages as $p){
+                    if($prev && $p > $prev+1){ $display[] = '...'; }
+                    $display[] = $p; $prev = $p;
+                }
+            ?>
+            <nav class="mt-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3" aria-label="Pagination">
+                <?php if($pagination['has_prev']): ?>
+                    <a href="<?= htmlspecialchars($makeUrl($pagination['prev_page'])) ?>" class="px-3 sm:px-4 py-2 rounded-full bg-white/60 hover:bg-white text-xs sm:text-sm font-semibold border border-white/40 transition" aria-label="Page précédente">«</a>
+                <?php else: ?>
+                    <span class="px-3 sm:px-4 py-2 rounded-full bg-white/30 text-xs sm:text-sm font-semibold border border-white/20 opacity-50 cursor-not-allowed">«</span>
+                <?php endif; ?>
+
+                <?php foreach($display as $p): ?>
+                    <?php if($p==='...'): ?>
+                        <span class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-gray-500">…</span>
+                    <?php elseif($p==$current): ?>
+                        <span class="px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 text-white text-xs sm:text-sm font-bold shadow"><?= $p ?></span>
+                    <?php else: ?>
+                        <a href="<?= htmlspecialchars($makeUrl($p)) ?>" class="px-3 sm:px-4 py-2 rounded-full bg-white/70 hover:bg-white text-xs sm:text-sm font-semibold border border-white/40 hover:border-purple-400 transition" aria-label="Aller à la page <?= $p ?>"><?= $p ?></a>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+
+                <?php if($pagination['has_next']): ?>
+                    <a href="<?= htmlspecialchars($makeUrl($pagination['next_page'])) ?>" class="px-3 sm:px-4 py-2 rounded-full bg-white/60 hover:bg-white text-xs sm:text-sm font-semibold border border-white/40 transition" aria-label="Page suivante">»</a>
+                <?php else: ?>
+                    <span class="px-3 sm:px-4 py-2 rounded-full bg-white/30 text-xs sm:text-sm font-semibold border border-white/20 opacity-50 cursor-not-allowed">»</span>
+                <?php endif; ?>
+            </nav>
+            <p class="mt-4 text-center text-xs sm:text-sm opacity-70">Page <?= $pagination['page'] ?> sur <?= $pagination['pages'] ?> (<?= $pagination['total'] ?> résultats)</p>
+        <?php endif; ?>
         <?php endif; ?>
     </div>
 </body>
