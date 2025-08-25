@@ -20,9 +20,8 @@ class PostsViewController extends Controller
         Router::render('posts/index', ['posts' => $posts, 'q' => $q, 'sort' => $sort]);
     }
 
-    public function show($params)
+    public function show(int $id)
     {
-        $id = $params['id'];
         $post = Post::getById($this->pdo, $id);
         Router::render('posts/show', ['post' => $post]);
     }
