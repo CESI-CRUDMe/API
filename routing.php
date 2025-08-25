@@ -12,8 +12,8 @@ $router = new Router($pdo);
 
 /************ Routes Frontend ************/
 $router->addRoute('GET', '/', [HomeController::class, 'index'], true);
+$router->addRoute('GET', '/test', [TestController::class, 'index'], true);
 $router->addRoute('GET', '/posts/create', [PostsViewController::class, 'create'], true);
-$router->addRoute('POST', '/ajax', [PostsViewController::class, 'ajax'], false);
 $router->addRoute('GET', '/posts', [PostsViewController::class, 'index'], true);
 $router->addRoute('GET', '/posts/{id}', [PostsViewController::class, 'show'], true);
 
