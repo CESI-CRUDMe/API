@@ -15,13 +15,14 @@ class Post
     public ?float $longitude = null;
     public ?string $contact_name = null;
     public ?string $contact_phone = null;
+    public ?string $image_base64 = null; // data URI complète (ex: data:image/png;base64,...)
     public ?DateTime $created_at = null;
     public ?DateTime $updated_at = null;
 
     public function create(PDO $pdo)
     {
-        $stmt = $pdo->prepare("INSERT INTO posts (title, content, price, latitude, longitude, contact_name, contact_phone) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$this->title, $this->content, $this->price, $this->latitude, $this->longitude, $this->contact_name, $this->contact_phone]);
+        $stmt = $pdo->prepare("INSERT INTO posts (title, content, price, latitude, longitude, contact_name, contact_phone, image_base64) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$this->title, $this->content, $this->price, $this->latitude, $this->longitude, $this->contact_name, $this->contact_phone, $this->image_base64]);
         $this->id = (int)$pdo->lastInsertId();
     }
 
@@ -58,6 +59,10 @@ class Post
         if ($this->contact_phone !== null) {
             $fields[] = "contact_phone = ?";
             $values[] = $this->contact_phone;
+        }
+        if ($this->image_base64 !== null) {
+            $fields[] = "image_base64 = ?";
+            $values[] = $this->image_base64;
         }
         
         if (empty($fields)) {
@@ -97,8 +102,10 @@ class Post
 
     public static function migrate(PDO $pdo)
     {
-        $stmt = $pdo->prepare("CREATE TABLE IF NOT EXISTS posts (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255), content TEXT, price DECIMAL(10, 2), latitude DECIMAL, longitude DECIMAL, contact_name VARCHAR(255), contact_phone VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)");
+        $stmt = $pdo->prepare("CREATE TABLE IF NOT EXISTS posts (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255), content TEXT, price DECIMAL(10, 2), latitude DECIMAL(10,6), longitude DECIMAL(10,6), contact_name VARCHAR(255), contact_phone VARCHAR(255), image_base64 MEDIUMTEXT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)");
         $stmt->execute();
+        // Tentative suppression colonne image_path si existait
+        try { $pdo->exec("ALTER TABLE posts DROP COLUMN image_path"); } catch(\Throwable $e) { /* ignore */ }
     }
 
     public static function getById(PDO $pdo, mixed $id)

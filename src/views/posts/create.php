@@ -54,7 +54,7 @@
 <div class="container mx-auto px-4 pb-16 max-w-3xl">
     <div class="glass-effect rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in">
         <div id="flashMsg" class="hidden"></div>
-        <form id="createPostForm" action="/api/posts" method="post" class="space-y-6">
+        <form id="createPostForm" action="/api/posts" method="post" enctype="multipart/form-data" class="space-y-6">
             <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="title">Titre *</label>
                 <input required name="title" id="title" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="Titre du post">
@@ -90,6 +90,23 @@
                     <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="contact_phone">Téléphone du contact *</label>
                     <input required name="contact_phone" id="contact_phone" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="Téléphone">
                 </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide mb-2 opacity-70" for="image">Image (optionnel)</label>
+                <div id="imageDropzoneCreate" class="relative border-2 border-dashed border-purple-300/60 rounded-xl p-5 bg-white/40 hover:bg-white/60 transition cursor-pointer flex flex-col items-center justify-center text-center gap-3">
+                    <input id="image" name="image" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    <div class="text-4xl">📷</div>
+                    <p class="text-sm font-medium text-gray-700"><span class="hidden sm:inline">Glissez-déposez /</span> Cliquez pour choisir</p>
+                    <p class="text-xs text-gray-500">PNG, JPG, WEBP, GIF &lt; 3MB</p>
+                </div>
+                <div id="imageDisplayCreate" class="hidden mt-2">
+                    <img id="imagePreviewCreate" src="" alt="Image sélectionnée" class="max-h-64 w-auto rounded-xl shadow-md object-contain mx-auto" />
+                    <div class="flex justify-center gap-3 mt-4">
+                        <button type="button" id="changeImageBtnCreate" class="px-4 py-2 rounded-full bg-gradient-to-r from-blue-300 to-purple-300 hover:from-blue-400 hover:to-purple-400 text-gray-800 text-xs font-semibold shadow-sm hover:shadow-md transition">Changer</button>
+                        <button type="button" id="removeImageBtnCreate" class="px-4 py-2 rounded-full bg-gradient-to-r from-red-300 to-pink-300 hover:from-red-400 hover:to-pink-400 text-gray-800 text-xs font-semibold shadow-sm hover:shadow-md transition">Supprimer</button>
+                    </div>
+                </div>
+                <input type="hidden" name="image_base64" id="imageBase64Create" />
             </div>
             <div class="pt-2 flex items-center gap-4">
                 <button type="submit" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300 hover:from-emerald-400 hover:to-teal-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Enregistrer</button>
@@ -221,5 +238,48 @@
             showFlash(err.message || 'Erreur réseau', 'error');
         }
     });
+
+    const fileInputCreate = document.getElementById('image');
+    const dzCreate = document.getElementById('imageDropzoneCreate');
+    const imageDisplayCreate = document.getElementById('imageDisplayCreate');
+    const previewImgCreate = document.getElementById('imagePreviewCreate');
+    const changeImageBtnCreate = document.getElementById('changeImageBtnCreate');
+    const removeImageBtnCreate = document.getElementById('removeImageBtnCreate');
+    const base64InputCreate = document.getElementById('imageBase64Create');
+
+    const maxSize = 3 * 1024 * 1024; // 3MB
+    const allowedMime = ['image/jpeg','image/png','image/gif','image/webp'];
+
+    function resetImageCreate(){
+        fileInputCreate.value = '';
+        base64InputCreate.value = '';
+        previewImgCreate.src = '';
+        imageDisplayCreate.classList.add('hidden');
+        dzCreate.classList.remove('hidden','ring-2','ring-purple-400');
+    }
+
+    function handleFileCreate(file){
+        if(!file) return;
+        if(!allowedMime.includes(file.type)) { showFlash('Type de fichier non supporté','error'); resetImageCreate(); return; }
+        if(file.size > maxSize) { showFlash('Image trop grande (>3MB)','error'); resetImageCreate(); return; }
+        const reader = new FileReader();
+        reader.onload = e => {
+            base64InputCreate.value = e.target.result;
+            previewImgCreate.src = e.target.result;
+            dzCreate.classList.add('hidden');
+            dzCreate.classList.remove('ring-2','ring-purple-400');
+            imageDisplayCreate.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    fileInputCreate.addEventListener('change', e=> handleFileCreate(e.target.files[0]));
+    changeImageBtnCreate.addEventListener('click', ()=> fileInputCreate.click());
+    removeImageBtnCreate.addEventListener('click', ()=> { resetImageCreate(); });
+
+    // Drag & drop visuel
+    ;['dragenter','dragover'].forEach(evt=> dzCreate.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); dzCreate.classList.add('bg-white/70'); }));
+    ;['dragleave','drop'].forEach(evt=> dzCreate.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); dzCreate.classList.remove('bg-white/70'); }));
+    dzCreate.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if(f) { fileInputCreate.files = e.dataTransfer.files; handleFileCreate(f); } });
 })();
 </script>

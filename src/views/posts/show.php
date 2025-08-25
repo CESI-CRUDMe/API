@@ -63,6 +63,14 @@
 
     <div class="container mx-auto px-4 pb-16 max-w-4xl">
         <div class="glass-effect rounded-2xl p-8 md:p-10 space-y-8 animate-fade-in">
+            <?php if(!empty($post['image_base64'])): ?>
+            <section>
+                <h3 class="text-2xl font-bold mb-4 gradient-text">Image</h3>
+                <div class="rounded-xl overflow-hidden shadow-md bg-white/40 backdrop-blur p-2 flex justify-center">
+                    <img src="<?php echo htmlspecialchars($post['image_base64']); ?>" alt="Image du post #<?php echo (int)$post['id']; ?>" class="max-h-96 w-auto object-contain rounded-lg" loading="lazy">
+                </div>
+            </section>
+            <?php endif; ?>
             <section>
                 <h3 class="text-2xl font-bold mb-4 gradient-text">Titre</h3>
                 <div class="bubble">

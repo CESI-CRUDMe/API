@@ -29,6 +29,7 @@ $router->addRoute('GET', '/api/posts', [PostsController::class, 'index'], true);
 $router->addRoute('GET', '/api/posts/{id}', [PostsController::class, 'show'], true);
 $router->addRoute('POST', '/api/posts', [PostsController::class, 'create'], false);
 $router->addRoute('PUT', '/api/posts/{id}', [PostsController::class, 'update'], false);
+$router->addRoute('POST', '/api/posts/{id}', [PostsController::class, 'update'], false); // update via multipart
 $router->addRoute('DELETE', '/api/posts/{id}', [PostsController::class, 'delete'], false);
 $router->addRoute('GET', '/api/posts/migrate', [PostsController::class, 'migrate'], false);
 

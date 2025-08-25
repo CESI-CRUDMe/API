@@ -58,7 +58,7 @@
 <div class="container mx-auto px-4 pb-16 max-w-3xl">
     <div class="glass-effect rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in">
         <div id="flashEdit" class="mb-4 hidden"></div>
-        <form id="editPostForm" action="/api/posts/<?php echo htmlspecialchars($post['id']); ?>" method="post" class="space-y-6">
+        <form id="editPostForm" action="/api/posts/<?php echo htmlspecialchars($post['id']); ?>" method="post" enctype="multipart/form-data" class="space-y-6">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($post['id']); ?>" />
             <div>
                 <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="title">Titre *</label>
@@ -94,6 +94,24 @@
                     <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="contact_phone">Téléphone du contact *</label>
                     <input required name="contact_phone" id="contact_phone" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" value="<?php echo htmlspecialchars($post['contact_phone']); ?>">
                 </div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide mb-2 opacity-70" for="imageEdit">Image (optionnel)</label>
+                <div id="imageDropzoneEdit" class="relative border-2 border-dashed border-purple-300/60 rounded-xl p-5 bg-white/40 hover:bg-white/60 transition cursor-pointer flex flex-col items-center justify-center text-center gap-3 <?php echo !empty($post['image_base64']) ? 'hidden' : ''; ?>">
+                    <input id="imageEdit" name="image" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    <div class="text-4xl">📷</div>
+                    <p class="text-sm font-medium text-gray-700"><span class="hidden sm:inline">Glissez-déposez /</span> Cliquez pour choisir</p>
+                    <p class="text-xs text-gray-500">PNG, JPG, WEBP, GIF &lt; 3MB</p>
+                </div>
+                <div id="imageDisplayEdit" class="mt-2 <?php echo !empty($post['image_base64']) ? '' : 'hidden'; ?>">
+                    <img id="imagePreviewEdit" src="<?php echo !empty($post['image_base64']) ? htmlspecialchars($post['image_base64']) : ''; ?>" alt="Image sélectionnée" class="max-h-64 w-auto rounded-xl shadow-md object-contain mx-auto" />
+                    <div class="flex justify-center gap-3 mt-4">
+                        <button type="button" id="changeImageBtnEdit" class="px-4 py-2 rounded-full bg-gradient-to-r from-blue-300 to-purple-300 hover:from-blue-400 hover:to-purple-400 text-gray-800 text-xs font-semibold shadow-sm hover:shadow-md transition">Changer</button>
+                        <button type="button" id="removeImageBtnEdit" class="px-4 py-2 rounded-full bg-gradient-to-r from-red-300 to-pink-300 hover:from-red-400 hover:to-pink-400 text-gray-800 text-xs font-semibold shadow-sm hover:shadow-md transition">Supprimer</button>
+                    </div>
+                </div>
+                <input type="hidden" name="image_base64" id="imageBase64Edit" value="<?php echo !empty($post['image_base64']) ? htmlspecialchars($post['image_base64']) : ''; ?>" />
+                <input type="hidden" name="remove_image" id="removeImageFlag" value="0" />
             </div>
             <div class="pt-2 flex items-center gap-4">
                 <button type="submit" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-yellow-300 to-amber-300 hover:from-yellow-400 hover:to-amber-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Mettre à jour</button>
@@ -134,12 +152,23 @@
 
     form.addEventListener('submit', async (e)=>{
         e.preventDefault();
-        const fd = new FormData(form);
-        const id = fd.get('id');
-        const body = new URLSearchParams();
-        fd.forEach((v,k)=> body.append(k,v));
+        const fileInput = document.getElementById('imageEdit');
+        const hasFile = fileInput && fileInput.files.length > 0;
+        let options;
+        if(hasFile){
+            const fd = new FormData(form);
+            fd.delete('id'); // id dans l'URL
+            options = { method: 'POST', body: fd }; // on utilisera override method ci-dessous
+        } else {
+            const fd = new FormData(form);
+            const body = new URLSearchParams();
+            fd.forEach((v,k)=>{ if(k!=='id') body.append(k,v); });
+            options = { method: 'PUT', headers: { 'Content-Type':'application/x-www-form-urlencoded' }, body: body.toString() };
+        }
+        const id = <?php echo (int)$post['id']; ?>;
+        const url = '/api/posts/' + id + (hasFile ? '' : '');
         try {
-            const res = await authFetch(form.action, { method: 'PUT', headers: { 'Content-Type':'application/x-www-form-urlencoded' }, body: body.toString() });
+            const res = await authFetch(url, options);
             const data = await res.json().catch(()=>({}));
             if(!res.ok){ showFlash(data.message || 'Erreur lors de la mise à jour','error'); return; }
             showFlash('Post mis à jour');
@@ -150,13 +179,14 @@
     // Modal carte édition
     const openBtn = document.getElementById('openMapEdit');
     const overlay = document.getElementById('modalOverlayEdit');
-    const content = document.getElementById('modalContentEdit');
-    const closeBtn = document.getElementById('closeModalEdit');
     const cancelBtn = document.getElementById('cancelEditBtn');
     const confirmBtn = document.getElementById('confirmEditLocationBtn');
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
     const preview = document.getElementById('coordPreviewEdit');
+    // Added missing references
+    const content = document.getElementById('modalContentEdit');
+    const closeBtn = document.getElementById('closeModalEdit');
     let map, marker, pending = null, initialized = false;
 
     function openModal(){ overlay.classList.remove('hidden'); overlay.classList.add('flex'); requestAnimationFrame(()=>{ content.classList.remove('scale-95','opacity-0'); content.classList.add('scale-100','opacity-100'); }); document.body.style.overflow='hidden'; if(!initialized){ initMap(); } setTimeout(()=> map.invalidateSize(), 250); }
@@ -179,5 +209,70 @@
     cancelBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
     confirmBtn.addEventListener('click', ()=>{ if(pending){ latInput.value = pending.lat.toFixed(6); lngInput.value = pending.lng.toFixed(6); showFlash('Coordonnées mises à jour'); closeModal(); }});
+
+    const fileInputEdit = document.getElementById('imageEdit');
+    const dzEdit = document.getElementById('imageDropzoneEdit');
+    const imageDisplayEdit = document.getElementById('imageDisplayEdit');
+    const previewImgEdit = document.getElementById('imagePreviewEdit');
+    const changeImageBtnEdit = document.getElementById('changeImageBtnEdit');
+    const removeImageBtnEdit = document.getElementById('removeImageBtnEdit');
+    const base64InputEdit = document.getElementById('imageBase64Edit');
+    const removeImageFlag = document.getElementById('removeImageFlag');
+
+    const maxSize = 3 * 1024 * 1024;
+    const allowedMime = ['image/jpeg','image/png','image/gif','image/webp'];
+
+    function resetImageEdit(){
+        fileInputEdit.value='';
+        base64InputEdit.value='';
+        removeImageFlag.value='1';
+        previewImgEdit.src='';
+        imageDisplayEdit.classList.add('hidden');
+        dzEdit.classList.remove('hidden','ring-2','ring-purple-400');
+    }
+    function handleFileEdit(file){
+        if(!file) return;
+        if(!allowedMime.includes(file.type)){ showFlash('Type de fichier non supporté','error'); resetImageEdit(); return; }
+        if(file.size > maxSize){ showFlash('Image trop grande (>3MB)','error'); resetImageEdit(); return; }
+        const reader = new FileReader();
+        reader.onload = e => {
+            base64InputEdit.value = e.target.result;
+            removeImageFlag.value='0';
+            previewImgEdit.src = e.target.result;
+            dzEdit.classList.add('hidden');
+            imageDisplayEdit.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+    fileInputEdit?.addEventListener('change', e=> handleFileEdit(e.target.files[0]));
+    changeImageBtnEdit?.addEventListener('click', ()=> fileInputEdit.click());
+    removeImageBtnEdit?.addEventListener('click', ()=> resetImageEdit());
+    ['dragenter','dragover'].forEach(evt=> dzEdit.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); dzEdit.classList.add('bg-white/70'); }));
+    ['dragleave','drop'].forEach(evt=> dzEdit.addEventListener(evt, e=>{ e.preventDefault(); e.stopPropagation(); dzEdit.classList.remove('bg-white/70'); }));
+    dzEdit.addEventListener('drop', e=>{ const f = e.dataTransfer.files[0]; if(f){ fileInputEdit.files = e.dataTransfer.files; handleFileEdit(f);} });
+
+    const formEdit = document.getElementById('editPostForm');
+    formEdit.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const hasFile = fileInputEdit && fileInputEdit.files.length > 0;
+        let options;
+        if(hasFile){
+            const fd = new FormData(formEdit);
+            fd.delete('id'); // éviter double id
+            options = { method: 'POST', body: fd };
+        } else {
+            const fd = new FormData(formEdit);
+            const body = new URLSearchParams();
+            fd.forEach((v,k)=>{ if(k!=='id') body.append(k,v); });
+            options = { method: 'PUT', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body.toString() };
+        }
+        try {
+            const res = await authFetch(formEdit.action, options);
+            const data = await res.json().catch(()=>({}));
+            if(!res.ok){ showFlash(data.message || 'Erreur lors de la mise à jour','error'); return; }
+            showFlash('Post mis à jour');
+            setTimeout(()=>{ window.location.href = '/posts/' + <?php echo (int)$post['id']; ?>; }, 1200);
+        } catch(err){ showFlash(err.message || 'Erreur réseau','error'); }
+    });
 })();
 </script>
