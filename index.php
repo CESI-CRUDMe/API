@@ -25,6 +25,7 @@ require 'vendor/autoload.php';
 /********** Autoloader **********/
 
 require 'config.php';
+require 'sentry.php';
 require 'database.php';
 
 // Ajuster le fuseau côté MySQL (utilise l'offset actuel de Paris, gère automatiquement l'heure d'été via PHP)
