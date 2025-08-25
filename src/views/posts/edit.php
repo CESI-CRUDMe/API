@@ -5,56 +5,102 @@
     <a href="/posts" class="inline-block mt-4 text-sm text-blue-600 hover:underline">← Retour</a>
 </div>
 <?php return; endif; ?>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'purple-pastel': '#c9a9dd',
+                    'blue-pastel': '#a8c8ec',
+                    'pink-pastel': '#f4c2c2',
+                    'lavender-pastel': '#e6d9f2',
+                },
+                animation: {
+                    'float': 'float 6s ease-in-out infinite',
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                },
+                keyframes: {
+                    float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } },
+                    fadeIn: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                }
+            }
+        }
+    }
+</script>
 <style>
+    .gradient-text { background: linear-gradient(45deg, #c9a9dd, #a8c8ec); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); }
+    .floating-element { animation: float 6s ease-in-out infinite; }
+    .floating-element:nth-child(1){animation-delay:0s;} .floating-element:nth-child(2){animation-delay:1s;} .floating-element:nth-child(3){animation-delay:2s;} .floating-element:nth-child(4){animation-delay:3s;} .floating-element:nth-child(5){animation-delay:4s;}
     #mapEdit { height: 320px; }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+        document.body.classList.add('min-h-screen','bg-gradient-to-br','from-purple-200','via-blue-200','to-pink-200','text-gray-700','font-sans');
+    });
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">Modifier le post #<?php echo htmlspecialchars($post['id']); ?></h1>
-    <div id="flashEdit" class="mb-4 hidden"></div>
-    <form id="editPostForm" action="/api/posts/<?php echo htmlspecialchars($post['id']); ?>" method="post" class="space-y-6">
-        <input type="hidden" name="id" value="<?php echo htmlspecialchars($post['id']); ?>" />
-        <div>
-            <label class="block text-sm font-medium mb-1" for="title">Titre *</label>
-            <input required name="title" id="title" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" value="<?php echo htmlspecialchars($post['title']); ?>">
-        </div>
-        <div>
-            <label class="block text-sm font-medium mb-1" for="content">Contenu *</label>
-            <textarea required name="content" id="content" rows="5" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring"><?php echo htmlspecialchars($post['content']); ?></textarea>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="sm:col-span-1">
-                <label class="block text-sm font-medium mb-1" for="price">Prix (€) *</label>
-                <input required name="price" id="price" type="number" min="0" step="0.01" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" value="<?php echo htmlspecialchars($post['price']); ?>">
+
+<!-- Floating Elements -->
+<div class="fixed inset-0 pointer-events-none -z-10">
+    <div class="floating-element absolute top-[10%] left-[10%] w-5 h-5 bg-purple-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[20%] left-[80%] w-5 h-5 bg-blue-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[60%] left-[15%] w-5 h-5 bg-pink-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[80%] left-[70%] w-5 h-5 bg-purple-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[40%] left-[90%] w-5 h-5 bg-blue-300 bg-opacity-20 rounded-full"></div>
+</div>
+
+<header class="container mx-auto px-4 pt-6 pb-4 text-center">
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-3">Modifier le Post #<?php echo htmlspecialchars($post['id']); ?></h1>
+    <p class="text-base sm:text-lg opacity-90 mb-5 max-w-2xl mx-auto px-2">Mettez à jour les informations du post</p>
+</header>
+
+<div class="container mx-auto px-4 pb-16 max-w-3xl">
+    <div class="glass-effect rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div id="flashEdit" class="mb-4 hidden"></div>
+        <form id="editPostForm" action="/api/posts/<?php echo htmlspecialchars($post['id']); ?>" method="post" class="space-y-6">
+            <input type="hidden" name="id" value="<?php echo htmlspecialchars($post['id']); ?>" />
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="title">Titre *</label>
+                <input required name="title" id="title" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" value="<?php echo htmlspecialchars($post['title']); ?>">
             </div>
             <div>
-                <label class="block text-sm font-medium mb-1">Latitude *</label>
-                <input required readonly name="latitude" id="latitude" type="text" class="w-full border rounded px-3 py-2 bg-gray-100" value="<?php echo htmlspecialchars($post['latitude']); ?>">
+                <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="content">Contenu *</label>
+                <textarea required name="content" id="content" rows="5" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm"><?php echo htmlspecialchars($post['content']); ?></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-1">
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="price">Prix (€) *</label>
+                    <input required name="price" id="price" type="number" min="0" step="0.01" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" value="<?php echo htmlspecialchars($post['price']); ?>">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Latitude *</label>
+                    <input required readonly name="latitude" id="latitude" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/50 text-gray-700 outline-none border border-white/40 text-sm" value="<?php echo htmlspecialchars($post['latitude']); ?>">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Longitude *</label>
+                    <input required readonly name="longitude" id="longitude" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/50 text-gray-700 outline-none border border-white/40 text-sm" value="<?php echo htmlspecialchars($post['longitude']); ?>">
+                </div>
             </div>
             <div>
-                <label class="block text-sm font-medium mb-1">Longitude *</label>
-                <input required readonly name="longitude" id="longitude" type="text" class="w-full border rounded px-3 py-2 bg-gray-100" value="<?php echo htmlspecialchars($post['longitude']); ?>">
+                <button type="button" id="openMapEdit" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-300 to-purple-300 hover:from-blue-400 hover:to-purple-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Ajuster sur la carte</button>
             </div>
-        </div>
-        <div>
-            <button type="button" id="openMapEdit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded transition">Ajuster sur la carte</button>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium mb-1" for="contact_name">Nom du contact *</label>
-                <input required name="contact_name" id="contact_name" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" value="<?php echo htmlspecialchars($post['contact_name']); ?>">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="contact_name">Nom du contact *</label>
+                    <input required name="contact_name" id="contact_name" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" value="<?php echo htmlspecialchars($post['contact_name']); ?>">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="contact_phone">Téléphone du contact *</label>
+                    <input required name="contact_phone" id="contact_phone" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" value="<?php echo htmlspecialchars($post['contact_phone']); ?>">
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium mb-1" for="contact_phone">Téléphone du contact *</label>
-                <!-- pattern corrigé -->
-                <input required name="contact_phone" id="contact_phone" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Téléphone" value="<?php echo htmlspecialchars($post['contact_phone']); ?>">
+            <div class="pt-2 flex items-center gap-4">
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-yellow-300 to-amber-300 hover:from-yellow-400 hover:to-amber-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Mettre à jour</button>
+                <a href="/posts/<?php echo htmlspecialchars($post['id']); ?>" class="px-5 py-2.5 rounded-full bg-white/60 hover:bg-white text-gray-700 text-sm font-semibold border border-white/40 transition">Annuler</a>
             </div>
-        </div>
-        <div class="pt-4 flex items-center gap-4">
-            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-5 py-2.5 rounded shadow">Mettre à jour</button>
-            <a href="/posts/<?php echo htmlspecialchars($post['id']); ?>" class="text-gray-600 hover:text-gray-800 text-sm">Annuler</a>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 <!-- Modal Map Edit -->
 <div id="modalOverlayEdit" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" aria-hidden="true" role="dialog" aria-modal="true">

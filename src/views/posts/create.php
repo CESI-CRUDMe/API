@@ -1,55 +1,102 @@
 <?php /* Page de création de post avec sélection de coordonnées via modal Leaflet (Tailwind modal) */ ?>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'purple-pastel': '#c9a9dd',
+                    'blue-pastel': '#a8c8ec',
+                    'pink-pastel': '#f4c2c2',
+                    'lavender-pastel': '#e6d9f2',
+                },
+                animation: {
+                    'float': 'float 6s ease-in-out infinite',
+                    'fade-in': 'fadeIn 0.5s ease-in-out',
+                },
+                keyframes: {
+                    float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } },
+                    fadeIn: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                }
+            }
+        }
+    }
+</script>
 <style>
+    /* Styles alignés avec index/show */
+    .gradient-text { background: linear-gradient(45deg, #c9a9dd, #a8c8ec); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.25); }
+    .floating-element { animation: float 6s ease-in-out infinite; }
+    .floating-element:nth-child(1){animation-delay:0s;} .floating-element:nth-child(2){animation-delay:1s;} .floating-element:nth-child(3){animation-delay:2s;} .floating-element:nth-child(4){animation-delay:3s;} .floating-element:nth-child(5){animation-delay:4s;}
     #map { height: 400px; }
-    /* Suppression des styles custom de modal: utilisation Tailwind uniquement */
 </style>
+<script>
+    // Applique classes body (header.tpl.php a déjà ouvert <body>)
+    document.addEventListener('DOMContentLoaded', ()=>{
+        document.body.classList.add('min-h-screen','bg-gradient-to-br','from-purple-200','via-blue-200','to-pink-200','text-gray-700','font-sans');
+    });
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-<div class="max-w-3xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">Créer un post</h1>
-    <div id="flashMsg" class="mb-4 hidden"></div>
-    <form id="createPostForm" action="/api/posts" method="post" class="space-y-6">
-        <div>
-            <label class="block text-sm font-medium mb-1" for="title">Titre *</label>
-            <input required name="title" id="title" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Titre du post">
-        </div>
-        <div>
-            <label class="block text-sm font-medium mb-1" for="content">Contenu *</label>
-            <textarea required name="content" id="content" rows="5" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Décrivez votre post..."></textarea>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div class="sm:col-span-1">
-                <label class="block text-sm font-medium mb-1" for="price">Prix (€) *</label>
-                <input required name="price" id="price" type="number" min="0" step="0.01" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="0.00">
+<!-- Floating Elements -->
+<div class="fixed inset-0 pointer-events-none -z-10">
+    <div class="floating-element absolute top-[10%] left-[10%] w-5 h-5 bg-purple-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[20%] left-[80%] w-5 h-5 bg-blue-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[60%] left-[15%] w-5 h-5 bg-pink-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[80%] left-[70%] w-5 h-5 bg-purple-300 bg-opacity-20 rounded-full"></div>
+    <div class="floating-element absolute top-[40%] left-[90%] w-5 h-5 bg-blue-300 bg-opacity-20 rounded-full"></div>
+</div>
+
+<header class="container mx-auto px-4 pt-6 pb-4 text-center">
+    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-3">Créer un Post</h2>
+    <p class="text-base sm:text-lg opacity-90 mb-5 max-w-2xl mx-auto px-2">Ajoutez un nouveau contenu à la collection</p>
+</header>
+
+<div class="container mx-auto px-4 pb-16 max-w-3xl">
+    <div class="glass-effect rounded-2xl p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div id="flashMsg" class="hidden"></div>
+        <form id="createPostForm" action="/api/posts" method="post" class="space-y-6">
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="title">Titre *</label>
+                <input required name="title" id="title" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="Titre du post">
             </div>
             <div>
-                <label class="block text-sm font-medium mb-1">Latitude *</label>
-                <input required readonly name="latitude" id="latitude" type="text" class="w-full border rounded px-3 py-2 bg-gray-100" placeholder="Cliquez sur la carte">
+                <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="content">Contenu *</label>
+                <textarea required name="content" id="content" rows="5" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="Décrivez votre post..."></textarea>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-1">
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="price">Prix (€) *</label>
+                    <input required name="price" id="price" type="number" min="0" step="0.01" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="0.00">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Latitude *</label>
+                    <input required readonly name="latitude" id="latitude" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/50 text-gray-700 outline-none border border-white/40 text-sm" placeholder="Cliquez sur la carte">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Longitude *</label>
+                    <input required readonly name="longitude" id="longitude" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/50 text-gray-700 outline-none border border-white/40 text-sm" placeholder="Cliquez sur la carte">
+                </div>
             </div>
             <div>
-                <label class="block text-sm font-medium mb-1">Longitude *</label>
-                <input required readonly name="longitude" id="longitude" type="text" class="w-full border rounded px-3 py-2 bg-gray-100" placeholder="Cliquez sur la carte">
+                <button type="button" id="openModal" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-300 to-purple-300 hover:from-blue-400 hover:to-purple-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Choisir la position sur la carte</button>
+                <p class="text-xs text-gray-600 mt-1">Cliquez ci-dessus pour sélectionner les coordonnées.</p>
             </div>
-        </div>
-        <div>
-            <button type="button" id="openModal" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded transition">Choisir la position sur la carte</button>
-            <p class="text-xs text-gray-500 mt-1">Cliquez ci-dessus pour sélectionner les coordonnées.</p>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium mb-1" for="contact_name">Nom du contact *</label>
-                <input required name="contact_name" id="contact_name" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Nom">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="contact_name">Nom du contact *</label>
+                    <input required name="contact_name" id="contact_name" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="Nom">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70" for="contact_phone">Téléphone du contact *</label>
+                    <input required name="contact_phone" id="contact_phone" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" placeholder="Téléphone">
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium mb-1" for="contact_phone">Téléphone du contact *</label>
-                <input required name="contact_phone" id="contact_phone" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Téléphone">
+            <div class="pt-2 flex items-center gap-4">
+                <button type="submit" class="px-6 py-2.5 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300 hover:from-emerald-400 hover:to-teal-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Enregistrer</button>
+                <a href="/posts" class="px-5 py-2.5 rounded-full bg-white/60 hover:bg-white text-gray-700 text-sm font-semibold border border-white/40 transition">Annuler</a>
             </div>
-        </div>
-        <div class="pt-4 flex items-center gap-4">
-            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2.5 rounded shadow">Enregistrer</button>
-            <a href="/posts" class="text-gray-600 hover:text-gray-800 text-sm">Annuler</a>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 <!-- Modal -->
