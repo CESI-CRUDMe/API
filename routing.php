@@ -16,6 +16,8 @@ $router->addRoute('GET', '/test', [TestController::class, 'index'], true);
 $router->addRoute('GET', '/posts/create', [PostsViewController::class, 'create'], true);
 $router->addRoute('GET', '/posts', [PostsViewController::class, 'index'], true);
 $router->addRoute('GET', '/posts/{id}', [PostsViewController::class, 'show'], true);
+$router->addRoute('GET', '/posts/{id}/pdf', [PostsViewController::class, 'pdf'], true); // export pdf single
+$router->addRoute('GET', '/posts/pdf/all', [PostsViewController::class, 'pdfAll'], true); // export pdf all
 
 /************ Routes Frontend ************/
 

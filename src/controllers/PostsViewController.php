@@ -67,8 +67,46 @@ class PostsViewController extends Controller
         $dompdf->render();
         $dompdf->stream('post-' . $post['id'] . '.pdf', ['Attachment' => true]);
     }
+
+    public function pdfAll()
+    {
+        $q = $_GET['q'] ?? null;
+        $sort = $_GET['sort'] ?? 'new';
+        $posts = Post::getFiltered($this->pdo, $q, $sort);
+
+        $html = '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8" />'
+            . '<title>Résumé de tous les posts</title>'
+            . '<style>*{font-family: DejaVu Sans, sans-serif;} body{font-size:11px;color:#222;margin:24px;} h1{font-size:18px;margin:0 0 14px;} table{width:100%;border-collapse:collapse;font-size:10px;} th,td{border:1px solid #ccc;padding:4px 6px;text-align:left;vertical-align:top;} th{background:#f0f0f0;} .small{margin-top:18px;font-size:9px;color:#555;} .nowrap{white-space:nowrap;} .truncate{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;} </style>'
+            . '</head><body>'
+            . '<h1>Résumé de tous les posts (' . count($posts) . ')</h1>';
+        if($q){ $html .= '<p><strong>Filtre recherche :</strong> ' . htmlspecialchars($q) . '</p>'; }
+        $html .= '<p><strong>Tri :</strong> ' . htmlspecialchars($sort) . '</p>';
+        $html .= '<table><thead><tr>'
+            . '<th>ID</th><th>Titre</th><th>Description (début)</th><th>Prix</th><th>Créé</th><th>MAJ</th><th>Contact</th>'
+            . '</tr></thead><tbody>';
+        if(empty($posts)){
+            $html .= '<tr><td colspan="7" style="text-align:center;">Aucun post</td></tr>';
         } else {
-            echo json_encode(['success' => false]);
+            foreach($posts as $p){
+                $html .= '<tr>'
+                    . '<td class="nowrap">' . htmlspecialchars($p['id']) . '</td>'
+                    . '<td class="truncate">' . htmlspecialchars(mb_strimwidth($p['title'] ?? '',0,60,'…')) . '</td>'
+                    . '<td class="truncate">' . htmlspecialchars(mb_strimwidth($p['content'] ?? '',0,80,'…')) . '</td>'
+                    . '<td class="nowrap">' . (isset($p['price'])?number_format($p['price'],2,',',' ') . ' €':'—') . '</td>'
+                    . '<td class="nowrap">' . (!empty($p['created_at'])?date('d/m/Y H:i', strtotime($p['created_at'])):'—') . '</td>'
+                    . '<td class="nowrap">' . (!empty($p['updated_at'])?date('d/m/Y H:i', strtotime($p['updated_at'])):'—') . '</td>'
+                    . '<td class="truncate">' . htmlspecialchars(($p['contact_name'] ?? '—') . (isset($p['contact_phone']) && $p['contact_phone']!==''? ' / ' . $p['contact_phone'] : '')) . '</td>'
+                    . '</tr>';
+            }
         }
+        $html .= '</tbody></table>'
+            . '<p class="small">Document généré le ' . date('d/m/Y H:i') . '.</p>'
+            . '</body></html>';
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream('posts-recap.pdf', ['Attachment' => true]);
     }
 }
