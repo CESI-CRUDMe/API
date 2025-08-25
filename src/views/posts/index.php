@@ -81,29 +81,12 @@
         </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="container mx-auto px-4 py-6">
-        <div class="flex justify-between items-center glass-effect rounded-2xl px-8 py-4">
-            <h1 class="text-2xl font-bold gradient-text">CRUD me !</h1>
-            <div class="flex gap-4">
-                <a href="/"
-                    class="bg-gradient-to-r from-purple-300 to-blue-300 hover:from-purple-400 hover:to-blue-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
-                    Accueil
-                </a>
-                <a href="/posts/create"
-                    class="bg-gradient-to-r from-green-300 to-emerald-300 hover:from-green-400 hover:to-emerald-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
-                    + Nouveau Post
-                </a>
-            </div>
-        </div>
-    </nav>
-
     <!-- Header Section -->
-    <header class="container mx-auto px-4 py-8 text-center">
-        <h2 class="text-4xl md:text-5xl font-bold gradient-text mb-4">
+    <header class="container mx-auto px-4 pt-6 pb-4 text-center">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text mb-3">
             Tous les Posts
         </h2>
-        <p class="text-lg opacity-90 mb-8">
+        <p class="text-base sm:text-lg opacity-90 mb-5 max-w-2xl mx-auto px-2">
             Découvrez notre collection complète de contenus
         </p>
     </header>
