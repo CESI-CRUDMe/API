@@ -28,11 +28,15 @@ class PostsViewController extends Controller
 
     public function create()
     {
+        if(session_status()===PHP_SESSION_NONE){ session_start(); }
+        if(!isset($_SESSION['auth'])){ header('Location: /login'); exit; }
         Router::render('posts/create');
     }
 
     public function edit(int $id)
     {
+        if(session_status()===PHP_SESSION_NONE){ session_start(); }
+        if(!isset($_SESSION['auth'])){ header('Location: /login'); exit; }
         $post = Post::getById($this->pdo, $id);
         if(!$post){
             http_response_code(404);

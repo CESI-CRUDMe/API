@@ -12,6 +12,7 @@ $router = new Router($pdo);
 
 /************ Routes Frontend ************/
 $router->addRoute('GET', '/', [HomeController::class, 'index'], true);
+$router->addRoute('GET', '/login', [HomeController::class, 'login'], true); // page login
 $router->addRoute('GET', '/test', [TestController::class, 'index'], true);
 $router->addRoute('GET', '/posts/create', [PostsViewController::class, 'create'], true);
 $router->addRoute('GET', '/posts', [PostsViewController::class, 'index'], true);
@@ -33,6 +34,9 @@ $router->addRoute('GET', '/api/posts/migrate', [PostsController::class, 'migrate
 
 // Auth
 $router->addRoute('POST', '/api/jwt', [AuthController::class, 'jwt'], true);
+$router->addRoute('POST', '/api/login', [AuthController::class, 'login'], true);
+$router->addRoute('GET', '/api/auth/status', [AuthController::class, 'status'], true);
+$router->addRoute('POST', '/api/logout', [AuthController::class, 'logout'], true);
 
 // Test
 $router->addRoute('GET', '/api/test', [TestController::class, 'index'], true);

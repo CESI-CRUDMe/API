@@ -35,33 +35,26 @@
             sync();
         });
     </script>
-    <?php if(defined('JWT_REFRESH_KEY')): ?>
-    <script>window.JWT_REFRESH_KEY = <?php echo json_encode(JWT_REFRESH_KEY); ?>;</script>
-    <?php endif; ?>
+    <?php if(session_status()===PHP_SESSION_NONE){ session_start(); } $isAuth = isset($_SESSION['auth']); ?>
     <script>
-    // Gestion simple du JWT côté frontend (demo) - Solution B
+    window.IS_AUTH = <?php echo $isAuth ? 'true':'false'; ?>;
+    // Gestion simple du JWT côté frontend pour endpoints protégés API
     window.__jwtToken = null; window.__jwtExp = 0;
     async function getJwt(){
-        // Log si token encore valide
-        if(window.__jwtToken && Date.now() < window.__jwtExp){
-            console.log('[JWT] Token (cache) =', window.__jwtToken, 'expire à', new Date(window.__jwtExp).toLocaleTimeString());
-            return window.__jwtToken; 
-        }
-        if(!window.JWT_REFRESH_KEY){ console.warn('[JWT] JWT_REFRESH_KEY non défini côté frontend'); return null; }
+        if(!window.IS_AUTH){ return null; }
+        if(window.__jwtToken && Date.now() < window.__jwtExp){ return window.__jwtToken; }
         try {
-            console.log('[JWT] Récupération d\'un nouveau token...');
-            const res = await fetch('/api/jwt',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: window.JWT_REFRESH_KEY }) });
-            if(!res.ok) { console.warn('[JWT] Echec récupération JWT'); return null; }
+            const res = await fetch('/api/jwt',{ method:'POST' });
+            if(!res.ok){ return null; }
             const data = await res.json();
-            window.__jwtToken = data.token; window.__jwtExp = Date.now() + (data.expires_in*1000) - 2000; // marge sécurité
-            console.log('[JWT] Nouveau token =', window.__jwtToken, '| expire à', new Date(window.__jwtExp).toLocaleTimeString());
+            window.__jwtToken = data.token; window.__jwtExp = Date.now() + (data.expires_in*1000) - 5000; // marge 5s
             return window.__jwtToken;
-        } catch(e){ console.warn('[JWT] Erreur JWT', e); return null; }
+        } catch(e){ return null; }
     }
     async function authFetch(url, options={}){
         const jwt = await getJwt();
         options.headers = options.headers || {};
-        if(jwt){ options.headers['Authorization'] = 'Bearer ' + jwt; console.log('[JWT] Authorization header ajouté pour', url); }
+        if(jwt){ options.headers['Authorization'] = 'Bearer ' + jwt; }
         return fetch(url, options);
     }
     </script>

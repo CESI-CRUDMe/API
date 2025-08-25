@@ -93,6 +93,7 @@ class Router {
         }
 
         if (!$match['route']['isPublic'] && $match['route']['isApi']) {
+            // Désormais seule la présence d'un JWT valide est acceptée (pas de fallback session)
             if (!$this->verifyJWT()) {
                 http_response_code(498);
                 echo json_encode(['error' => 'Unauthorized']);
