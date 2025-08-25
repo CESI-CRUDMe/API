@@ -14,11 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Définir le fuseau horaire sur Paris
+date_default_timezone_set('Europe/Paris');
+
 /********** Autoloader **********/
 require 'vendor/autoload.php';
 /********** Autoloader **********/
 
-
 require 'config.php';
 require 'database.php';
+
+// Ajuster le fuseau côté MySQL (utilise l'offset actuel de Paris, gère automatiquement l'heure d'été via PHP)
+try { if(isset($pdo)) { $pdo->exec("SET time_zone='" . date('P') . "'"); } } catch (\Exception $e) {}
+
 require 'routing.php';

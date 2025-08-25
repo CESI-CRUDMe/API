@@ -106,10 +106,53 @@ class Router {
 
         $controllerClass = $match['route']['controller'];
         $action = $match['route']['action'];
-        $parameters = $match['parameters'];
+        $parameters = $match['parameters']; // tableau associatif clé => valeur (ex: ['id'=>123]) ou vide
 
         $controller = new $controllerClass($this->pdo);
-        return $controller->$action($parameters);
+
+        // Invocation intelligente pour éviter les erreurs ArgumentCountError
+        try {
+            $refMethod = new \ReflectionMethod($controller, $action);
+            $refParams = $refMethod->getParameters();
+            $paramCount = count($refParams);
+
+            if ($paramCount === 0) {
+                return $controller->$action();
+            }
+
+            if ($paramCount === 1) {
+                $p = $refParams[0];
+                $type = $p->hasType() ? $p->getType() : null;
+                $isArrayType = $type && ($type instanceof \ReflectionNamedType) && $type->getName() === 'array';
+
+                // Si le param attendu n'est pas un array et qu'on a exactement une valeur, on passe la valeur seule
+                if (!$isArrayType && count($parameters) === 1) {
+                    $value = array_values($parameters)[0];
+                    return $controller->$action($value);
+                }
+                // Sinon on passe le tableau complet (ex: méthode attend array $params)
+                return $controller->$action($parameters);
+            }
+
+            // Méthode avec plusieurs paramètres : on tente d'aligner par nom si possible
+            $args = [];
+            foreach ($refParams as $p) {
+                $name = $p->getName();
+                if (array_key_exists($name, $parameters)) {
+                    $args[] = $parameters[$name];
+                } elseif ($p->isDefaultValueAvailable()) {
+                    $args[] = $p->getDefaultValue();
+                } else {
+                    // Param manquant : on peut lever une erreur ou passer null
+                    $args[] = null;
+                }
+            }
+            return $controller->$action(...$args);
+        } catch (\ReflectionException $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Controller action not callable']);
+            return;
+        }
     }
 
     public static function render(string $view, array $data = []): void {
@@ -123,4 +166,4 @@ class Router {
             require ROOT . '/src/views/errors/404.php';
         }
     }
-} 
+}
