@@ -141,4 +141,38 @@ class Post
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public static function getFilteredPaginated(PDO $pdo, ?string $q, string $sort = 'new', int $limit = 9, int $page = 1): array
+    {
+        $where = [];
+        $params = [];
+        if ($q !== null && $q !== '') {
+            $where[] = "(title LIKE :q OR content LIKE :q OR contact_name LIKE :q)";
+            $params['q'] = "%" . $q . "%";
+        }
+        // Total count
+        $countSql = "SELECT COUNT(*) FROM posts";
+        if ($where) { $countSql .= " WHERE " . implode(' AND ', $where); }
+        $stmt = $pdo->prepare($countSql);
+        $stmt->execute($params);
+        $total = (int)$stmt->fetchColumn();
+
+        // Data query
+        $sql = "SELECT * FROM posts";
+        if ($where) { $sql .= " WHERE " . implode(' AND ', $where); }
+        switch($sort) {
+            case 'old': $sql .= " ORDER BY created_at ASC"; break;
+            case 'title': $sql .= " ORDER BY title ASC"; break;
+            default: $sql .= " ORDER BY created_at DESC"; // new
+        }
+        $offset = max(0, ($page - 1) * $limit);
+        $sql .= " LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
+        foreach($params as $k=>$v){ $stmt->bindValue($k, $v, PDO::PARAM_STR); }
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return ['data' => $data, 'total' => $total];
+    }
 }
