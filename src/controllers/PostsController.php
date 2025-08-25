@@ -56,21 +56,39 @@ class PostsController extends Controller
         echo json_encode(['message' => 'Post created successfully', 'mail' => $mailResult]);
     }
 
-    public function update(): void
+    public function update(array $params): void
     {
-        $data = $_REQUEST;
-
-        if(!isset($data['id'])){
+        $id = $params['id'] ?? null;
+        if(!$id){
             http_response_code(400);
-            echo json_encode(['message' => 'Missing required fields']);
-            die();
+            echo json_encode(['message' => 'Missing id parameter']);
+            return;
         }
-
+        // Récupération données PUT (x-www-form-urlencoded ou JSON)
+        $raw = file_get_contents('php://input');
+        $data = [];
+        if(isset($_SERVER['CONTENT_TYPE']) && str_contains($_SERVER['CONTENT_TYPE'], 'application/json')){
+            $data = json_decode($raw, true) ?? [];
+        } else {
+            parse_str($raw, $data);
+        }
+        if(empty($data)){
+            // fallback éventuel (rare)
+            $data = $_REQUEST;
+        }
         $post = new Post();
-        $post->id = $data['id'];
+        $post->id = $id;
         foreach($data as $key => $value){
-            if($key !== 'id'){
-                $post->$key = $value;
+            if($key === 'id') continue;
+            if(property_exists($post, $key)){
+                // Sanitize de base
+                if(in_array($key, ['title','content','contact_name','contact_phone'])){
+                    $post->$key = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                } elseif(in_array($key, ['price','latitude','longitude'])) {
+                    $post->$key = is_numeric($value) ? (float)$value : null;
+                } else {
+                    $post->$key = $value;
+                }
             }
         }
         $post->update($this->pdo);
