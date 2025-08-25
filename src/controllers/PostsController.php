@@ -95,11 +95,21 @@ class PostsController extends Controller
         echo json_encode(['message' => 'Post updated successfully']);
     }
 
-    public function delete(): void
+    public function delete(int $id): void
     {
-        $data = $_REQUEST;
+        if(!$this->isAuthenticated()) {
+            http_response_code(401);
+            echo json_encode(['message' => 'Unauthorized']);
+            return;
+        }
+        $existing = Post::getById($this->pdo, $id);
+        if(!$existing){
+            http_response_code(404);
+            echo json_encode(['message' => 'Post not found']);
+            return;
+        }
         $post = new Post();
-        $post->id = $data['id'];
+        $post->id = (int)$id;
         $post->delete($this->pdo);
         echo json_encode(['message' => 'Post deleted successfully']);
     }
