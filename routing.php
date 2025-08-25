@@ -40,6 +40,7 @@ $router->addRoute('POST', '/api/logout', [AuthController::class, 'logout'], true
 
 // Test
 $router->addRoute('GET', '/api/test', [TestController::class, 'index'], true);
+$router->addRoute('GET', '/api/test/hash', [TestController::class, 'hashPassword'], true);
 /************ Routes API ************/
 
 

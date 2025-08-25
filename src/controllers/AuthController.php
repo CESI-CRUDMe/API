@@ -5,6 +5,7 @@ namespace App\controllers;
 use PDO;
 use Firebase\JWT\JWT;
 use Exception;
+use App\models\User; // ajout
 
 class AuthController
 {
@@ -27,8 +28,8 @@ class AuthController
             'aud' => 'https://api.crudme.mindlens.fr',
             'iat' => time(),
             'exp' => time() + 300, // 5 min maintenant
-            'user' => $_SESSION['auth']['username'] ?? 'admin',
-            'role' => 'admin'
+            'user' => $_SESSION['auth']['email'] ?? null,
+            'uid' => $_SESSION['auth']['id'] ?? null
         ];
         try {
             $encodedToken = JWT::encode($payload, JWT_KEY, 'HS256');
@@ -42,14 +43,29 @@ class AuthController
         }
     }
 
-    // Login form POST
+    // Login form POST (DB users)
     public function login(): void
     {
         $data = json_decode(file_get_contents('php://input'), true) ?? $_POST;
-        $user = $data['username'] ?? '';
+        $email = $data['email'] ?? $data['username'] ?? '';
         $pass = $data['password'] ?? '';
-        if($user === ADMIN_USER && $pass === ADMIN_PASS){
-            $_SESSION['auth'] = [ 'username' => $user, 'login_time' => time() ];
+
+        if (!$email || !$pass) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Email et mot de passe requis']);
+            return;
+        }
+
+        // Récupération user
+        $user = User::findByEmail($this->pdo, $email);
+        if ($user && password_verify($pass, $user['password_hash'])) {
+            // Regénérer l'ID de session pour éviter fixation
+            session_regenerate_id(true);
+            $_SESSION['auth'] = [
+                'id' => $user['id'],
+                'email' => $user['email'],
+                'login_time' => time()
+            ];
             echo json_encode(['message' => 'ok']);
             return;
         }
@@ -60,7 +76,7 @@ class AuthController
     public function status(): void
     {
         $logged = isset($_SESSION['auth']);
-        echo json_encode(['authenticated' => $logged, 'user' => $logged ? $_SESSION['auth']['username'] : null]);
+        echo json_encode(['authenticated' => $logged, 'user' => $logged ? $_SESSION['auth']['email'] : null]);
     }
 
     public function logout(): void
