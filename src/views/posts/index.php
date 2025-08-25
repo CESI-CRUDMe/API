@@ -91,6 +91,41 @@
         </p>
     </header>
 
+    <!-- Barre Recherche / Filtres -->
+    <div class="container mx-auto px-4">
+        <?php
+            // Les posts sont déjà filtrés/triés par le contrôleur.
+            $q = $q ?? ($_GET['q'] ?? '');
+            $sort = $sort ?? ($_GET['sort'] ?? 'new');
+        ?>
+        <form method="get" class="glass-effect rounded-2xl p-4 md:p-5 mb-4 flex flex-col sm:flex-row gap-4 sm:items-end">
+            <div class="flex-1">
+                <label for="search" class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Recherche</label>
+                <input id="search" name="q" value="<?php echo htmlspecialchars($q); ?>" placeholder="Titre, contenu, auteur..." class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm" />
+            </div>
+            <div class="sm:w-48">
+                <label for="sort" class="block text-xs font-semibold uppercase tracking-wide mb-1 opacity-70">Tri</label>
+                <select id="sort" name="sort" class="w-full px-4 py-2.5 rounded-xl bg-white/70 focus:bg-white outline-none border border-white/40 focus:border-purple-400 transition text-sm">
+                    <option value="new" <?php if($sort==='new') echo 'selected'; ?>>Plus récents</option>
+                    <option value="old" <?php if($sort==='old') echo 'selected'; ?>>Plus anciens</option>
+                    <option value="title" <?php if($sort==='title') echo 'selected'; ?>>Titre A→Z</option>
+                </select>
+            </div>
+            <div class="flex gap-2 sm:gap-3">
+                <button type="submit" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-300 to-blue-300 hover:from-purple-400 hover:to-blue-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition">Filtrer</button>
+                <?php if($q !== '' || $sort !== 'new'): ?>
+                    <a href="/posts" class="px-4 py-2.5 rounded-full bg-white/60 hover:bg-white text-gray-700 text-sm font-semibold border border-white/40 transition">Réinitialiser</a>
+                <?php endif; ?>
+            </div>
+        </form>
+        <div class="flex justify-end mb-8">
+            <?php $exportUrl = '/posts/pdf/all' . ($q!=='' || $sort!=='new' ? ('?'. http_build_query(array_filter(['q'=>$q,'sort'=>$sort], fn($v)=>$v!==null && $v!==''))) : ''); ?>
+            <a href="<?php echo $exportUrl; ?>" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-300 to-teal-300 hover:from-emerald-400 hover:to-teal-400 font-semibold text-gray-700 text-sm shadow-sm hover:shadow-md transition" title="Exporter un récapitulatif PDF de tous les posts filtrés">
+                <span>Exporter PDF (tous)</span>
+            </a>
+        </div>
+    </div>
+
     <!-- Posts Grid -->
     <div class="container mx-auto px-4 py-8">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-center">

@@ -106,4 +106,31 @@ class Post
         $stmt->execute(['id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    public static function getFiltered(PDO $pdo, ?string $q, string $sort = 'new') : array
+    {
+        $sql = "SELECT * FROM posts";
+        $where = [];
+        $params = [];
+        if ($q !== null && $q !== '') {
+            $where[] = "(title LIKE :q OR content LIKE :q OR contact_name LIKE :q)"; // contact_name assimilé à author
+            $params['q'] = "%" . $q . "%";
+        }
+        if ($where) {
+            $sql .= " WHERE " . implode(' AND ', $where);
+        }
+        switch($sort) {
+            case 'old':
+                $sql .= " ORDER BY created_at ASC";
+                break;
+            case 'title':
+                $sql .= " ORDER BY title ASC";
+                break;
+            default: // new
+                $sql .= " ORDER BY created_at DESC";
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

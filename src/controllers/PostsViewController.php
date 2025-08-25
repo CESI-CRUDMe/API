@@ -14,8 +14,10 @@ class PostsViewController extends Controller
 {
     public function index()
     {
-        $posts = Post::getAll($this->pdo);
-        Router::render('posts/index', ['posts' => $posts]);
+        $q = $_GET['q'] ?? null;
+        $sort = $_GET['sort'] ?? 'new';
+        $posts = Post::getFiltered($this->pdo, $q, $sort);
+        Router::render('posts/index', ['posts' => $posts, 'q' => $q, 'sort' => $sort]);
     }
 
     public function show($params)
