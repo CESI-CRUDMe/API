@@ -188,10 +188,4 @@
                 Responsive Design
             </div>
         </div>
-
-        <!-- Footer -->
-        <footer class="text-center py-10 opacity-80 border-t border-white border-opacity-20">
-            <p class="mb-2">&copy; 2025 CRUD me ! - Projet d'évaluation Bloc 3</p>
-            <p>Développement Web & Application Mobile</p>
-        </footer>
     </div>
