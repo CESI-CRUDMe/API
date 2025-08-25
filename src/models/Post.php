@@ -22,6 +22,7 @@ class Post
     {
         $stmt = $pdo->prepare("INSERT INTO posts (title, content, price, latitude, longitude, contact_name, contact_phone) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$this->title, $this->content, $this->price, $this->latitude, $this->longitude, $this->contact_name, $this->contact_phone]);
+        $this->id = (int)$pdo->lastInsertId();
     }
 
     public function update(PDO $pdo)
