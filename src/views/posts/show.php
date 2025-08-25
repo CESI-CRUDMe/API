@@ -108,7 +108,7 @@
                 <a href="/posts" class="bg-gradient-to-r from-purple-300 to-blue-300 hover:from-purple-400 hover:to-blue-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300">← Retour</a>
                 <div class="flex gap-3">
                     <a href="/posts/<?php echo htmlspecialchars($post['id']); ?>/pdf" class="bg-gradient-to-r from-emerald-300 to-teal-300 hover:from-emerald-400 hover:to-teal-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300" title="Exporter en PDF">Exporter PDF</a>
-                    <button disabled class="opacity-50 cursor-not-allowed bg-gradient-to-r from-yellow-300 to-amber-300 text-gray-700 font-bold py-2 px-6 rounded-full">Edit (à venir)</button>
+                    <a href="/posts/<?php echo htmlspecialchars($post['id']); ?>/edit" class="bg-gradient-to-r from-yellow-300 to-amber-300 hover:from-yellow-400 hover:to-amber-400 text-gray-700 font-bold py-2 px-6 rounded-full transition-all duration-300" title="Modifier">Editer</a>
                     <button disabled class="opacity-50 cursor-not-allowed bg-gradient-to-r from-red-300 to-pink-300 text-gray-700 font-bold py-2 px-6 rounded-full">Supprimer (à venir)</button>
                 </div>
             </div>

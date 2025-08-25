@@ -42,7 +42,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1" for="contact_phone">Téléphone du contact *</label>
-                <input required name="contact_phone" id="contact_phone" type="text" pattern="[0-9 +().-]{6,}" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Téléphone">
+                <input required name="contact_phone" id="contact_phone" type="text" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring" placeholder="Téléphone">
             </div>
         </div>
         <div class="pt-4 flex items-center gap-4">
@@ -99,7 +99,6 @@
 
     function openModal(){
         modalOverlay.classList.remove('hidden');
-        // flex container only après affichage
         modalOverlay.classList.add('flex');
         requestAnimationFrame(()=> { modalContent.classList.remove('scale-95','opacity-0'); modalContent.classList.add('scale-100','opacity-100'); });
         document.body.style.overflow='hidden';
@@ -160,7 +159,7 @@
         }
         const fd = new FormData(form);
         try {
-            const res = await fetch(form.action, { method: 'POST', body: fd });
+            const res = await authFetch(form.action, { method: 'POST', body: fd });
             const data = await res.json().catch(()=>({}));
             if(!res.ok){
                 showFlash(data.message || 'Erreur lors de la création', 'error');
@@ -170,7 +169,6 @@
             form.reset();
             latitudeInput.value = '';
             longitudeInput.value = '';
-            // Optionnel: redirection après délai
             setTimeout(()=> { window.location.href = '/posts'; }, 1500);
         } catch(err){
             showFlash(err.message || 'Erreur réseau', 'error');

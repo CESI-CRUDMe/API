@@ -35,6 +35,36 @@
             sync();
         });
     </script>
+    <?php if(defined('JWT_REFRESH_KEY')): ?>
+    <script>window.JWT_REFRESH_KEY = <?php echo json_encode(JWT_REFRESH_KEY); ?>;</script>
+    <?php endif; ?>
+    <script>
+    // Gestion simple du JWT côté frontend (demo) - Solution B
+    window.__jwtToken = null; window.__jwtExp = 0;
+    async function getJwt(){
+        // Log si token encore valide
+        if(window.__jwtToken && Date.now() < window.__jwtExp){
+            console.log('[JWT] Token (cache) =', window.__jwtToken, 'expire à', new Date(window.__jwtExp).toLocaleTimeString());
+            return window.__jwtToken; 
+        }
+        if(!window.JWT_REFRESH_KEY){ console.warn('[JWT] JWT_REFRESH_KEY non défini côté frontend'); return null; }
+        try {
+            console.log('[JWT] Récupération d\'un nouveau token...');
+            const res = await fetch('/api/jwt',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: window.JWT_REFRESH_KEY }) });
+            if(!res.ok) { console.warn('[JWT] Echec récupération JWT'); return null; }
+            const data = await res.json();
+            window.__jwtToken = data.token; window.__jwtExp = Date.now() + (data.expires_in*1000) - 2000; // marge sécurité
+            console.log('[JWT] Nouveau token =', window.__jwtToken, '| expire à', new Date(window.__jwtExp).toLocaleTimeString());
+            return window.__jwtToken;
+        } catch(e){ console.warn('[JWT] Erreur JWT', e); return null; }
+    }
+    async function authFetch(url, options={}){
+        const jwt = await getJwt();
+        options.headers = options.headers || {};
+        if(jwt){ options.headers['Authorization'] = 'Bearer ' + jwt; console.log('[JWT] Authorization header ajouté pour', url); }
+        return fetch(url, options);
+    }
+    </script>
 </head>
 
 <body>

@@ -31,6 +31,17 @@ class PostsViewController extends Controller
         Router::render('posts/create');
     }
 
+    public function edit(int $id)
+    {
+        $post = Post::getById($this->pdo, $id);
+        if(!$post){
+            http_response_code(404);
+            Router::render('posts/show', ['post' => null]);
+            return;
+        }
+        Router::render('posts/edit', ['post' => $post]);
+    }
+
     public function pdf(int $id)
     {
         if(!$id){ http_response_code(400); echo 'Missing id'; return; }
