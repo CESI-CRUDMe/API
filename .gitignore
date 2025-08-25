@@ -2,3 +2,4 @@ config.php
 .vscode
 .DS_Store
 vendor
+package-lock.json

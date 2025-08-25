@@ -1,6 +1,6 @@
 <?php
 
-namespace app\models;
+namespace App\models;
 
 use DateTime;
 use PDO;
@@ -22,6 +22,7 @@ class Post
     {
         $stmt = $pdo->prepare("INSERT INTO posts (title, content, price, latitude, longitude, contact_name, contact_phone) VALUES (?, ?, ?, ?, ?, ?, ?)");
         $stmt->execute([$this->title, $this->content, $this->price, $this->latitude, $this->longitude, $this->contact_name, $this->contact_phone]);
+        $this->id = (int)$pdo->lastInsertId();
     }
 
     public function update(PDO $pdo)
@@ -82,10 +83,14 @@ class Post
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getAll(PDO $pdo, int $page, int $limit)
+    public static function getAll(PDO $pdo, ?int $page = null, ?int $limit = null)
     {
-        $offset = ($page - 1) * $limit;
-        $stmt = $pdo->prepare("SELECT * FROM posts LIMIT $limit OFFSET $offset");
+        $sql = "SELECT * FROM posts";
+        if ($page && $limit) {
+            $offset = ($page - 1) * $limit;
+            $sql .= " LIMIT $limit OFFSET $offset";
+        }
+        $stmt = $pdo->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -94,5 +99,39 @@ class Post
     {
         $stmt = $pdo->prepare("CREATE TABLE IF NOT EXISTS posts (id INT AUTO_INCREMENT PRIMARY KEY, title VARCHAR(255), content TEXT, price DECIMAL(10, 2), latitude DECIMAL, longitude DECIMAL, contact_name VARCHAR(255), contact_phone VARCHAR(255), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)");
         $stmt->execute();
+    }
+
+    public static function getById(PDO $pdo, mixed $id)
+    {
+        $stmt = $pdo->prepare("SELECT * FROM posts WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public static function getFiltered(PDO $pdo, ?string $q, string $sort = 'new') : array
+    {
+        $sql = "SELECT * FROM posts";
+        $where = [];
+        $params = [];
+        if ($q !== null && $q !== '') {
+            $where[] = "(title LIKE :q OR content LIKE :q OR contact_name LIKE :q)"; // contact_name assimilé à author
+            $params['q'] = "%" . $q . "%";
+        }
+        if ($where) {
+            $sql .= " WHERE " . implode(' AND ', $where);
+        }
+        switch($sort) {
+            case 'old':
+                $sql .= " ORDER BY created_at ASC";
+                break;
+            case 'title':
+                $sql .= " ORDER BY title ASC";
+                break;
+            default: // new
+                $sql .= " ORDER BY created_at DESC";
+        }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
