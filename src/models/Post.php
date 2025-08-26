@@ -88,15 +88,26 @@ class Post
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getAll(PDO $pdo, ?int $page = null, ?int $limit = null)
+    public static function getAll(PDO $pdo, ?string $lastID = null, ?string $limit = null)
     {
         $sql = "SELECT * FROM posts";
-        if ($page && $limit) {
-            $offset = ($page - 1) * $limit;
-            $sql .= " LIMIT $limit OFFSET $offset";
+        if ($lastID && $limit) {
+            if($lastID == '-1') {
+                $sql .= " ORDER BY id DESC LIMIT :limit";
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindParam('limit', $limit, PDO::PARAM_INT);
+                $stmt->execute();
+            } else {
+                $sql .= " WHERE id < :lastID ORDER BY id DESC LIMIT :limit";
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindParam('lastID', $lastID, PDO::PARAM_INT);
+                $stmt->bindParam('limit', $limit, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+        } else {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute();
         }
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
