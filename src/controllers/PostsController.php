@@ -11,9 +11,9 @@ class PostsController extends Controller
 {
     public function index($data): void
     {
-        $page = $data['page'] ?? 1;
-        $limit = $data['limit'] ?? 10;
-        $posts = Post::getAll($this->pdo, $page, $limit);
+        $lastID = $_GET['lastID'] ?? '-1';
+        $limit = $_GET['limit'] ?? 10;
+        $posts = Post::getAll($this->pdo, $lastID, $limit);
         echo json_encode(['posts' => $posts]);
     }
 

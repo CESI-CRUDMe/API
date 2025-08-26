@@ -39,6 +39,8 @@ $router->addRoute('POST', '/api/login', [AuthController::class, 'login'], true);
 $router->addRoute('GET', '/api/auth/status', [AuthController::class, 'status'], true);
 $router->addRoute('POST', '/api/logout', [AuthController::class, 'logout'], true);
 
+$router->addRoute('POST', '/api/auth', [AuthController::class, 'apiAuth'], true);
+
 // Test
 $router->addRoute('GET', '/api/test', [TestController::class, 'index'], true);
 $router->addRoute('GET', '/api/test/hash', [TestController::class, 'hashPassword'], true);
